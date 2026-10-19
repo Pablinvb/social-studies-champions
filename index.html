@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Social Studies Champions: a team trivia game. Spin the wheel, answer, and collect all five characters to win.">
+<meta name="theme-color" content="#150a2b">
+<meta property="og:title" content="Social Studies Champions">
+<meta property="og:description" content="Collect the characters. Conquer the knowledge. A classroom trivia game for Social Studies.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="social-card.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" type="image/png">
+<style>
+  :root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+<title>Social Studies Champions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap">
+<style>
+/* Layout concept: a purple arcade stage — one fixed starfield behind a centre column that
+   switches between hero, board and question; teams always visible as a rail to the right. */
+:root{
+  --void:#150a2b; --deep:#22103f; --panel:#2f1659; --panel-2:#3b1d6e; --panel-3:#4a2585;
+  --edge:#6a34c4; --violet:#8f44dd; --violet-soft:#a96bea;
+  --gold:#ffc83d; --gold-deep:#ef8a1c; --gold-pale:#ffe9a8;
+  --ink:#f7eeff; --muted:#c0a6e8; --faint:#9b7fcb;
+  --good:#2ed873; --good-deep:#17a854; --bad:#ff4f72; --bad-deep:#c6163c;
+  --c-history:#e3a44b; --c-geography:#3fc37a; --c-civics:#5d8df3; --c-economics:#ffc83d; --c-culture:#f05fc8;
+  --r-s:10px; --r-m:18px; --r-l:28px;
+  --f-display:"Bungee","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Nunito","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{min-height:100%}
+body{
+  margin:0;min-height:100%;font-family:var(--f-body);color:var(--ink);
+  background:
+    radial-gradient(1100px 700px at 50% -10%, #5b2ba8 0%, rgba(91,43,168,0) 62%),
+    radial-gradient(800px 560px at 12% 100%, #7a2fae 0%, rgba(122,47,174,0) 60%),
+    radial-gradient(700px 500px at 92% 86%, #4a1f8c 0%, rgba(74,31,140,0) 60%),
+    var(--void);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column}
+.wrap{width:100%;max-width:1320px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));}
+h1,h2,h3{text-wrap:balance;margin:0}
+button{font-family:inherit}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- buttons ---------- */
+.btn{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--f-display);font-size:clamp(15px,1.5vw,20px);letter-spacing:.5px;
+  color:#3a1a00;background:linear-gradient(180deg,var(--gold-pale) 0%,var(--gold) 38%,var(--gold-deep) 100%);
+  border:0;border-radius:var(--r-m);padding:16px 30px;cursor:pointer;
+  box-shadow:0 7px 0 #a85b08,0 14px 26px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.65);
+  transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;text-decoration:none;
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(5px);box-shadow:0 2px 0 #a85b08,0 6px 14px rgba(0,0,0,.4),inset 0 2px 0 rgba(255,255,255,.5)}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.btn.ghost{
+  color:var(--ink);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04));
+  box-shadow:0 5px 0 rgba(0,0,0,.35),inset 0 0 0 2px rgba(255,255,255,.22);
+}
+.btn.ghost:active{box-shadow:0 1px 0 rgba(0,0,0,.35),inset 0 0 0 2px rgba(255,255,255,.22)}
+.btn.sm{font-size:13px;padding:10px 16px;border-radius:var(--r-s);box-shadow:0 4px 0 #a85b08,0 8px 16px rgba(0,0,0,.35)}
+.btn.sm:active{box-shadow:0 1px 0 #a85b08}
+.btn.sm.ghost{box-shadow:0 3px 0 rgba(0,0,0,.35),inset 0 0 0 2px rgba(255,255,255,.2)}
+.btn.block{width:100%}
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--ink);
+  font-size:19px;cursor:pointer;transition:background .15s,transform .15s;
+}
+.icon-btn:hover{background:rgba(255,255,255,.18)}
+.icon-btn:active{transform:scale(.93)}
+.icon-btn.on{background:var(--gold);color:#3a1a00;border-color:var(--gold-pale)}
+
+/* ---------- panels ---------- */
+.panel{
+  background:linear-gradient(180deg,rgba(74,37,133,.92),rgba(42,20,80,.94));
+  border:2px solid rgba(169,107,234,.42);border-radius:var(--r-l);
+  box-shadow:0 18px 44px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.14);
+  padding:22px;
+}
+.panel.tight{padding:16px;border-radius:var(--r-m)}
+.eyebrow{font-family:var(--f-display);font-size:12px;letter-spacing:2.4px;color:var(--gold);text-transform:uppercase}
+.muted{color:var(--muted)}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;gap:12px;padding-block:14px;flex-wrap:wrap}
+.topbar .brand{font-family:var(--f-display);font-size:clamp(14px,1.6vw,19px);color:var(--gold);letter-spacing:1px}
+.topbar .spacer{flex:1 1 auto;min-width:0}
+
+/* ---------- home ---------- */
+.home{display:flex;flex-direction:column;align-items:center;gap:26px;padding-block:28px 46px;text-align:center}
+.logo{font-family:var(--f-display);line-height:.96;letter-spacing:1px;margin:0}
+.logo .l1{display:block;font-size:clamp(30px,7.2vw,76px);
+  background:linear-gradient(180deg,#fff7e0 0%,var(--gold) 46%,var(--gold-deep) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 0 #8f3d00) drop-shadow(0 12px 26px rgba(255,170,40,.42));}
+.logo .l2{display:block;font-size:clamp(20px,4.6vw,46px);color:var(--ink);
+  filter:drop-shadow(0 3px 0 #4a1f8c) drop-shadow(0 10px 22px rgba(0,0,0,.5));}
+.tagline{font-style:italic;color:var(--gold-pale);font-size:clamp(14px,1.8vw,20px);font-weight:700;letter-spacing:.4px}
+.char-row{display:flex;justify-content:center;align-items:flex-end;gap:clamp(2px,1.4vw,22px);flex-wrap:wrap;width:100%}
+.char-pod{display:flex;flex-direction:column;align-items:center;gap:6px;width:clamp(92px,17vw,186px);animation:float 5s ease-in-out infinite}
+.char-pod:nth-child(2){animation-delay:.5s}.char-pod:nth-child(3){animation-delay:1s}
+.char-pod:nth-child(4){animation-delay:1.5s}.char-pod:nth-child(5){animation-delay:2s}
+.char-pod img{width:100%;display:block;filter:drop-shadow(0 12px 20px rgba(0,0,0,.5))}
+.char-pod .nm{font-family:var(--f-display);font-size:clamp(10px,1.2vw,15px);letter-spacing:1.2px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.home-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.home-note{color:var(--muted);font-size:14px;max-width:62ch}
+
+/* ---------- forms ---------- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.label{font-family:var(--f-display);font-size:11px;letter-spacing:1.8px;color:var(--gold);text-transform:uppercase}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{
+  font-family:var(--f-body);font-weight:900;font-size:14px;color:var(--ink);cursor:pointer;
+  background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.16);border-radius:var(--r-s);
+  padding:10px 14px;transition:all .14s ease;
+}
+.seg button:hover{background:rgba(255,255,255,.15)}
+.seg button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold-pale);color:#3a1a00;box-shadow:0 0 0 3px rgba(255,200,61,.25)}
+input[type=text],textarea,select{
+  font-family:var(--f-body);font-size:15px;font-weight:700;color:var(--ink);
+  background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.18);border-radius:var(--r-s);padding:11px 13px;width:100%;
+}
+textarea{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px;font-weight:400;line-height:1.5;min-height:180px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:3px solid var(--gold);outline-offset:1px;border-color:transparent}
+select option{background:#2f1659;color:var(--ink)}
+.swatches{display:flex;gap:7px;flex-wrap:wrap}
+.swatch{width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.3);cursor:pointer;padding:0}
+.swatch[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35);transform:scale(1.12)}
+.team-setup{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;padding:14px;border-radius:var(--r-m);
+  background:rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.1)}
+.team-setup .field{flex:1 1 180px}
+
+/* ---------- game layout ---------- */
+.board{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start;padding-bottom:30px}
+@media (max-width:900px){.board{grid-template-columns:1fr}}
+.stage{display:flex;flex-direction:column;align-items:center;gap:16px;min-width:0}
+
+/* turn banner */
+.turn-banner{
+  width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  border-radius:var(--r-m);padding:12px 18px;border:2px solid rgba(255,255,255,.22);
+  background:linear-gradient(90deg,var(--tc,#8f44dd) 0%,rgba(0,0,0,.25) 100%);
+  box-shadow:0 10px 26px rgba(0,0,0,.35);
+}
+.turn-banner .who{font-family:var(--f-display);font-size:clamp(15px,2.2vw,24px);letter-spacing:.6px}
+.turn-banner .lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:900;opacity:.85}
+.turn-banner .spacer{flex:1 1 auto}
+.chip{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 13px;font-weight:900;font-size:13px;
+  background:rgba(0,0,0,.34);border:2px solid rgba(255,255,255,.2)}
+
+/* wheel */
+.wheel-stage{position:relative;width:min(100%,460px);aspect-ratio:1/1;display:grid;place-items:center}
+.wheel-rotor{width:100%;height:100%;transform:rotate(0deg)}
+.wheel-rotor.spin{transition:transform 4.6s cubic-bezier(.17,.72,.14,1)}
+.wheel-glow{position:absolute;inset:-6%;border-radius:50%;background:radial-gradient(circle,rgba(255,200,61,.3),transparent 62%);filter:blur(12px);pointer-events:none}
+.pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;z-index:3;
+  border-left:19px solid transparent;border-right:19px solid transparent;border-top:38px solid var(--gold);
+  filter:drop-shadow(0 4px 5px rgba(0,0,0,.6))}
+.spin-hub{position:absolute;width:26%;aspect-ratio:1;border-radius:50%;z-index:2;border:0;cursor:pointer;
+  font-family:var(--f-display);font-size:clamp(13px,2.2vw,21px);color:#3a1a00;letter-spacing:.5px;
+  background:radial-gradient(circle at 36% 30%,#fff6dc,var(--gold) 48%,var(--gold-deep));
+  box-shadow:0 6px 0 #a85b08,0 14px 30px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,255,255,.7);
+  transition:transform .12s}
+.spin-hub:active{transform:scale(.95)}
+.spin-hub[disabled]{opacity:.55;cursor:default}
+.spin-hub:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.cat-reveal{display:flex;align-items:center;gap:14px;animation:pop .45s cubic-bezier(.2,1.5,.4,1)}
+.cat-reveal img{width:84px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+.cat-reveal .nm{font-family:var(--f-display);font-size:clamp(18px,3vw,30px)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* question */
+.qcard{width:100%;max-width:860px;display:flex;flex-direction:column;gap:14px}
+.qhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qhead img{width:52px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.qhead .cat{font-family:var(--f-display);font-size:15px;letter-spacing:1px}
+.badge{font-size:11px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;padding:5px 11px;border-radius:999px;
+  background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.2)}
+.timer-wrap{width:100%;height:16px;border-radius:999px;background:rgba(0,0,0,.45);overflow:hidden;border:2px solid rgba(255,255,255,.16)}
+.timer-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--good),var(--gold));transition:width .25s linear}
+.timer-bar.warn{background:linear-gradient(90deg,var(--gold),var(--bad));animation:pulse .6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.6}}
+.qtext{font-size:clamp(18px,2.7vw,30px);font-weight:900;line-height:1.3;text-wrap:balance}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.opt{display:flex;align-items:center;gap:13px;text-align:left;cursor:pointer;width:100%;
+  font-family:var(--f-body);font-size:clamp(15px,1.7vw,18px);font-weight:700;color:var(--ink);
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+  border:2px solid rgba(255,255,255,.2);border-radius:var(--r-m);padding:15px 17px;
+  transition:transform .12s,background .15s,border-color .15s}
+.opt:hover:not([disabled]){background:rgba(255,255,255,.2);transform:translateY(-2px)}
+.opt:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.opt .key{flex:0 0 auto;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  font-family:var(--f-display);font-size:17px;color:#3a1a00;background:var(--gold-pale)}
+.opt.correct{background:linear-gradient(180deg,rgba(46,216,115,.4),rgba(23,168,84,.25));border-color:var(--good);animation:goodshake .5s}
+.opt.correct .key{background:var(--good);color:#04260f}
+.opt.wrong{background:linear-gradient(180deg,rgba(255,79,114,.38),rgba(198,22,60,.22));border-color:var(--bad);animation:badshake .45s}
+.opt.wrong .key{background:var(--bad);color:#2b0010}
+.opt.dim{opacity:.4}
+.opt[disabled]{cursor:default}
+@keyframes goodshake{0%{transform:scale(1)}40%{transform:scale(1.045)}100%{transform:scale(1)}}
+@keyframes badshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+.verdict{display:flex;align-items:center;gap:12px;border-radius:var(--r-m);padding:14px 18px;font-weight:900;
+  border:2px solid rgba(255,255,255,.2);animation:pop .3s ease}
+.verdict.ok{background:linear-gradient(90deg,rgba(46,216,115,.4),rgba(46,216,115,.1));border-color:var(--good)}
+.verdict.no{background:linear-gradient(90deg,rgba(255,79,114,.38),rgba(255,79,114,.1));border-color:var(--bad)}
+.verdict .big{font-family:var(--f-display);font-size:clamp(15px,2vw,22px)}
+.explain{font-size:15px;font-weight:600;line-height:1.5;color:var(--ink)}
+
+/* teams rail */
+.rail{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media (max-width:900px){.rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+.team-card{border-radius:var(--r-m);padding:13px;border:3px solid var(--tc);
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(0,0,0,.3));box-shadow:0 10px 24px rgba(0,0,0,.33);
+  transition:transform .2s,box-shadow .2s}
+.team-card.active{transform:scale(1.025);box-shadow:0 0 0 4px rgba(255,255,255,.25),0 14px 30px rgba(0,0,0,.45)}
+.team-card .thead{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.team-card .dot{width:15px;height:15px;border-radius:50%;background:var(--tc);border:2px solid rgba(255,255,255,.6);flex:0 0 auto}
+.team-card .tname{font-family:var(--f-display);font-size:14px;letter-spacing:.4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.team-card .score{font-family:var(--f-display);font-size:17px;color:var(--gold)}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.slot{position:relative;aspect-ratio:1/1;border-radius:12px;display:grid;place-items:center;overflow:hidden;
+  background:rgba(0,0,0,.4);border:2px dashed rgba(255,255,255,.22)}
+.slot img{width:100%;height:100%;object-fit:contain}
+.slot.got{border-style:solid;border-color:var(--cc);background:radial-gradient(circle,rgba(255,255,255,.2),rgba(0,0,0,.35));
+  box-shadow:0 0 12px var(--cc);animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+.slot .prog{position:absolute;inset:auto 0 0 0;height:4px;background:var(--cc);transition:width .4s}
+.slot .ghost{opacity:.26;filter:grayscale(1)}
+.mini-prog{margin-top:7px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.3px}
+
+/* unlock + victory */
+.overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(10,4,24,.82);
+  padding:max(16px,env(safe-area-inset-left,0px));backdrop-filter:blur(3px);animation:fade .25s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.unlock-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:460px;
+  animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+.unlock-card img{width:min(58vw,260px);animation:unlockspin 1s cubic-bezier(.2,1.3,.3,1)}
+@keyframes unlockspin{0%{transform:scale(.2) rotate(-200deg);opacity:0}70%{transform:scale(1.14) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.rays{position:absolute;width:min(90vw,620px);aspect-ratio:1;border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 0deg,rgba(255,200,61,.34) 0 8deg,transparent 8deg 24deg);
+  animation:spin360 9s linear infinite;mask-image:radial-gradient(circle,#000 18%,transparent 68%);
+  -webkit-mask-image:radial-gradient(circle,#000 18%,transparent 68%)}
+@keyframes spin360{to{transform:rotate(360deg)}}
+.trophy{font-size:clamp(56px,12vw,120px);line-height:1;filter:drop-shadow(0 10px 20px rgba(255,180,40,.6));animation:float 3.4s ease-in-out infinite}
+.victory{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding-block:30px}
+.winner-name{font-family:var(--f-display);font-size:clamp(26px,6vw,62px);letter-spacing:1px;
+  background:linear-gradient(180deg,#fff7e0,var(--gold) 50%,var(--gold-deep));
+  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #8f3d00)}
+.winner-chars{display:flex;gap:clamp(4px,1.6vw,18px);justify-content:center;flex-wrap:wrap}
+.winner-chars img{width:clamp(66px,12vw,132px);animation:float 4s ease-in-out infinite;filter:drop-shadow(0 10px 16px rgba(0,0,0,.5))}
+.winner-chars img:nth-child(2){animation-delay:.4s}.winner-chars img:nth-child(3){animation-delay:.8s}
+.winner-chars img:nth-child(4){animation-delay:1.2s}.winner-chars img:nth-child(5){animation-delay:1.6s}
+#confetti{position:fixed;inset:0;z-index:50;pointer-events:none}
+
+/* results table */
+.results{width:100%;max-width:760px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:460px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.14);font-size:14px}
+th{font-family:var(--f-display);font-size:11px;letter-spacing:1.4px;color:var(--gold);text-transform:uppercase}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:900}
+
+/* teacher drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);z-index:45;overflow-y:auto;
+  background:linear-gradient(180deg,#38196b,#1d0d38);border-left:3px solid var(--gold);
+  box-shadow:-18px 0 50px rgba(0,0,0,.6);animation:slidein .25s ease;
+  padding:18px max(18px,env(safe-area-inset-right,0px)) 40px 18px}
+@keyframes slidein{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.drawer h3{font-family:var(--f-display);font-size:16px;color:var(--gold);letter-spacing:1px;margin:22px 0 10px}
+.drawer h3:first-of-type{margin-top:10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.log-item{font-size:12.5px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.3);margin-bottom:6px;border-left:4px solid var(--lc,#888)}
+.log-item b{font-weight:900}
+
+/* bank */
+.bank-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.qrow{border-radius:var(--r-m);padding:13px;background:rgba(0,0,0,.26);border:2px solid rgba(255,255,255,.12);border-left:6px solid var(--cc)}
+.qrow .meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:7px}
+.qrow .qq{font-weight:900;font-size:15px;line-height:1.35}
+.qrow .ans{margin-top:8px;font-size:13.5px;font-weight:700;color:var(--good)}
+.qrow .exp{margin-top:5px;font-size:13px;color:var(--muted);line-height:1.5}
+.tag{font-size:10.5px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;padding:4px 9px;border-radius:999px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2)}
+.tag.cat{background:var(--cc);color:#1b0a2e;border-color:transparent}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.toolbar .field{flex:1 1 150px}
+.empty{text-align:center;padding:40px 16px;color:var(--muted);font-weight:700}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;
+  background:var(--gold);color:#3a1a00;font-weight:900;padding:12px 22px;border-radius:999px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);animation:pop .3s}
+.steps{display:grid;gap:14px;counter-reset:s}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step .n{flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--f-display);font-size:17px;color:#3a1a00;background:var(--gold)}
+.step p{margin:4px 0 0;color:var(--muted);line-height:1.55;font-weight:600}
+.step h4{margin:0;font-family:var(--f-display);font-size:15px;letter-spacing:.5px}
+.kbd{display:inline-block;font-family:ui-monospace,monospace;font-size:12px;background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:2px 7px}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .wheel-rotor.spin{transition:transform .4s ease-out}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<canvas id="confetti" hidden></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/htm/3.1.1/htm.js"></script>
+<script>
+(function(){
+"use strict";
+var React=window.React, ReactDOM=window.ReactDOM;
+var html=window.htm.bind(React.createElement);
+var useState=React.useState, useEffect=React.useEffect, useRef=React.useRef,
+    useMemo=React.useMemo;
+
+/* ============================ reference data ============================ */
+var CATS=[
+  {id:"history",   name:"History",   color:"#e3a44b", img:"art/history.webp"},
+  {id:"geography", name:"Geography", color:"#3fc37a", img:"art/geography.webp"},
+  {id:"civics",    name:"Civics",    color:"#5d8df3", img:"art/civics.webp"},
+  {id:"economics", name:"Economics", color:"#ffc83d", img:"art/economics.webp"},
+  {id:"culture",   name:"Culture",   color:"#f05fc8", img:"art/culture.webp"}
+];
+var CAT_BY_ID={}; CATS.forEach(function(c){CAT_BY_ID[c.id]=c;});
+var LEVELS=[
+  {id:"8", name:"8th EGB"},
+  {id:"9", name:"9th EGB"},
+  {id:"10",name:"10th EGB"},
+  {id:"B1",name:"1st BGU"},
+  {id:"B2",name:"2nd BGU"},
+  {id:"B3",name:"3rd BGU"}
+];
+var LEVEL_ORDER={"8":0,"9":1,"10":2,"B1":3,"B2":4,"B3":5};
+var SETS=[
+  {id:"unit",   name:"Aztecs, Maya & the Andes", short:"Unit 1"},
+  {id:"wwi",    name:"WWI & Russian Revolution", short:"Unit 2"},
+  {id:"general",name:"General Social Studies",   short:"General"},
+  {id:"custom", name:"My own questions",         short:"Custom"}
+];
+var SET_BY_ID={}; SETS.forEach(function(s){SET_BY_ID[s.id]=s;});
+var DIFFS=["easy","medium","hard"];
+var POINTS={easy:100,medium:200,hard:300};
+var UNLOCK_BONUS=150;
+var TEAM_COLORS=["#ff4f72","#3fc37a","#5d8df3","#ffc83d","#f05fc8","#ff8a3d","#36d4d0","#b388ff"];
+
+var T={
+  start:"START GAME", howto:"HOW TO PLAY", bank:"QUESTION BANK", resume:"CONTINUE MATCH",
+  tagline:"Collect the characters. Conquer the knowledge.",
+  homeNote:"A team knowledge contest for Social Studies. The first team to collect all five characters wins.",
+  setup:"GAME SETUP", numTeams:"Number of teams", teamName:"Team name", color:"Colour",
+  level:"School level", levelHint:"Applies to the general bank. The two units are always available in full.",
+  difficulty:"Difficulty", timeLimit:"Time per question", needed:"Correct answers to unlock",
+  set:"Question set", setAll:"All sets", available:"questions available",
+  startMatch:"START MATCH", backHome:"Home",
+  spin:"SPIN", spinning:"...", turn:"Turn of", score:"Score", pts:"pts",
+  easy:"Easy", medium:"Medium", hard:"Hard", mixed:"Mixed", all:"All",
+  correct:"CORRECT!", incorrect:"INCORRECT", timeup:"TIME'S UP!",
+  answerWas:"The correct answer was", next:"NEXT TEAM",
+  unlocked:"CHARACTER UNLOCKED!", collect:"COLLECT",
+  winner:"CHAMPIONS!", finalScore:"Final score", summary:"Match summary",
+  playAgain:"PLAY AGAIN", newGame:"NEW GAME",
+  teacher:"Teacher panel", pause:"Pause", unpause:"Resume", paused:"GAME PAUSED",
+  skip:"Skip question", adjust:"Fix score", chars:"Manage characters",
+  review:"Review answers", restart:"Restart match", exit:"Exit to home",
+  sound:"Sound", close:"Close", noLog:"No answers recorded yet.",
+  team:"Team", characters:"Characters", hits:"Correct", misses:"Wrong",
+  addQ:"New question", edit:"Edit", del:"Delete", save:"Save", cancel:"Cancel",
+  importT:"Import", exportT:"Export", copy:"Copy", copied:"Copied",
+  search:"Search", category:"Category", topic:"Topic", question:"Question", options:"Options",
+  answer:"Correct answer", explanation:"Explanation",
+  importHint:"Paste JSON or CSV and press Import. CSV uses the same header as the export.",
+  exportHint:"Copy this text and save it as a .json or .csv file.",
+  replaceAll:"Replace whole bank", merge:"Add to bank",
+  restoreDefaults:"Restore original bank", custom:"Custom",
+  imported:"questions imported", badData:"The pasted text could not be read.",
+  noQuestions:"No questions match these filters.",
+  shortBank:"Few questions with this setup. Add levels or change the difficulty.",
+  recycled:"This category's question pool was reshuffled.",
+  already:"Character already collected: this one only scores points.",
+  rulesTitle:"HOW TO PLAY", gotIt:"GOT IT", howManyTeams:"teams",
+  sec:"s", grant:"Give", revoke:"Remove", saved:"Saved",
+  shuffleOpts:"Shuffle the options on every question"
+};
+
+/* ============================ question bank ============================ */
+function Q(cat,lvl,dif,q,o,a,e){
+  return {set:"general",cat:cat,lvl:lvl,dif:dif,q:q,o:o,a:a,e:e};
+}
+function U(ref,cat,dif,q,o,a,e){
+  return {set:"unit",ref:ref,topic:"Aztecs, Maya & the Andes",cat:cat,lvl:"8",dif:dif,q:q,o:o,a:a,e:e};
+}
+function W(ref,cat,dif,topic,q,o,a,e){
+  return {set:"wwi",ref:ref,topic:topic,cat:cat,lvl:"10",dif:dif,q:q,o:o,a:a,e:e};
+}
+var SEED=[
+// ---------- UNIT SET: Aztecs, Maya & Pre-Columbian Andean Civilizations ----------
+U("Q08","history","medium","Who was the Aztec ruler when Hernán Cortés arrived in 1519?",["Pachacuti","Atahualpa","K'inich Janaab' Pakal","Moctezuma II"],3,"Moctezuma II ruled the Aztec Empire when Cortés arrived."),
+U("Q14","history","hard","What was the main cause of the fall of Tenochtitlan in 1521?",["A volcanic eruption","An Inca invasion","A Spanish-led siege supported by Indigenous allies","A drought alone"],2,"Cortés and his Indigenous allies defeated Tenochtitlan after a siege; disease also devastated its population."),
+U("Q16","history","easy","In which present-day country did the Caral civilization develop?",["Peru","Mexico","Colombia","Brazil"],0,"Caral developed in the Supe Valley on Peru's central coast."),
+U("Q17","history","easy","Which civilization built Machu Picchu?",["Moche","Nazca","Inca","Chavín"],2,"Machu Picchu was built during the Inca period."),
+U("Q27","history","hard","Which pre-Inca civilization established an important administrative center near modern Ayacucho?",["Maya","Caral","Chimú","Wari"],3,"The Wari developed a major center near present-day Ayacucho, Peru."),
+U("Q29","history","hard","Which civilization is generally recognized as one of the earliest urban societies in the Americas?",["Chimú","Inca","Caral","Wari"],2,"Caral-Supe flourished thousands of years before the Inca Empire."),
+U("Q01","geography","easy","Where did the Aztec civilization develop?",["Central Mexico","Ancient Egypt","Southern Europe","East Asia"],0,"The Aztecs established their empire in central Mexico."),
+U("Q02","geography","easy","What was the capital of the Aztec Empire?",["Cusco","Tikal","Tenochtitlan","Chichén Itzá"],2,"Tenochtitlan was built on an island in Lake Texcoco."),
+U("Q06","geography","medium","Which present-day countries were part of the Maya cultural region?",["Chile and Argentina","Egypt and Sudan","Mexico and Guatemala","Peru and Bolivia"],2,"The Maya region included southern Mexico, Guatemala, Belize, and parts of Honduras and El Salvador."),
+U("Q18","geography","easy","What was the capital of the Inca Empire?",["Quito","Cusco","Lima","Tikal"],1,"Cusco was the political and ceremonial center of the Inca Empire."),
+U("Q20","geography","easy","Which mountain range influenced the development of Andean civilizations?",["The Andes","The Alps","The Himalayas","The Rockies"],0,"The Andes shaped agriculture, transportation, and settlement patterns."),
+U("Q26","geography","hard","Which civilization developed near Lake Titicaca and built the Gateway of the Sun?",["Nazca","Tiwanaku","Moche","Chimú"],1,"Tiwanaku developed near Lake Titicaca in present-day Bolivia."),
+U("Q09","civics","medium","What was the Triple Alliance?",["An alliance of Tenochtitlan, Texcoco, and Tlacopan","Three Maya kingdoms","Three Inca provinces","A Spanish trading agreement"],0,"The Triple Alliance formed the political foundation of the Aztec Empire."),
+U("Q12","civics","hard","What does the term 'Maya city-state' describe?",["A unified empire ruled from one capital","A Spanish colonial town","A village without leaders","An independent political center with its own ruler"],3,"Maya civilization included multiple independent kingdoms and political centers."),
+U("Q25","civics","medium","What were quipus used for in the Inca Empire?",["Making weapons","Building roads","Recording numerical and administrative information","Painting ceramics"],2,"Quipus used knotted cords to record information, especially numerical records."),
+U("Q28","civics","hard","What was the mit'a in the Inca Empire?",["A system of rotational labor obligations","A gold currency","A religious calendar","A type of irrigation canal"],0,"The Inca state organized labor obligations for construction, farming, and other activities."),
+U("Q30","civics","hard","What was the Qhapaq Ñan?",["A Maya calendar","The extensive Inca road network","A Nazca ceremonial site","A Moche irrigation system"],1,"The Qhapaq Ñan connected regions of the Inca Empire through a vast road system."),
+U("Q07","civics","medium","What was the purpose of the Maya Long Count calendar?",["To measure rainfall only","To record long periods of time","To collect taxes","To divide farmland"],1,"The Long Count tracked days across extended chronological periods."),
+U("Q31","civics","easy","Who held the highest political authority in the Inca Empire?",["The Sapa Inca","A Spanish governor","A Maya priest","A pochteca merchant"],0,"The Sapa Inca was the supreme ruler of the Inca Empire."),
+U("Q32","civics","easy","How were most Maya kingdoms politically organized?",["Under one emperor","As independent kingdoms ruled by dynasties","As modern democracies","As Spanish provinces"],1,"Maya political power was divided among kingdoms with their own rulers."),
+U("Q33","civics","medium","What was the calpulli in Aztec society?",["A neighborhood or community unit","A type of temple","A military weapon","A Maya calendar"],0,"Calpulli were community units involved in local organization, land use, and obligations."),
+U("Q34","civics","medium","How did the Inca state manage many distant territories?",["Through provincial administration and local leaders","By allowing every province complete independence","Only through sea travel","By using a parliament elected by universal vote"],0,"The Inca state combined appointed officials, provincial centers, and local authorities."),
+U("Q35","civics","hard","Why did the Aztec Empire demand tribute from conquered cities?",["To maintain imperial power and supply resources","To abolish all local governments","To introduce European money","To replace farming with mining"],0,"Tribute supported the imperial center and reinforced political control."),
+U("Q04","economics","easy","Which crop was a staple food for both the Aztecs and the Maya?",["Wheat","Rice","Barley","Maize"],3,"Maize, or corn, was essential to both civilizations."),
+U("Q05","economics","easy","What was a chinampa?",["An agricultural plot built in a shallow lake","A stone temple","A type of calendar","A royal palace"],0,"Chinampas were productive agricultural plots created in lake environments."),
+U("Q13","economics","hard","What was the main role of the pochteca in Aztec society?",["Long-distance trade","Temple construction","Calendar creation","Military training only"],0,"Pochteca were specialized long-distance merchants."),
+U("Q23","economics","medium","What was the main purpose of agricultural terraces in the Andes?",["To build pyramids","To store gold","To create temples","To grow crops on steep mountain slopes"],3,"Terraces expanded farmland and helped manage water and soil erosion."),
+U("Q24","economics","medium","Which civilization built Chan Chan, a large adobe city?",["Chimú","Caral","Tiwanaku","Chavín"],0,"Chan Chan was the capital of the Chimú kingdom on Peru's northern coast."),
+U("Q10","economics","medium","Which mathematical concept was used in Maya numerals?",["Negative numbers only","Roman numerals","Zero","Binary code"],2,"The Maya developed a numeral system that included a symbol for zero."),
+U("Q36","economics","easy","Which product was used as a medium of exchange in parts of Mesoamerica?",["Cacao beans","Paper banknotes","Plastic coins","Silver dollars"],0,"Cacao beans were used in some transactions in Mesoamerican markets."),
+U("Q37","economics","easy","What was a major economic activity of Andean communities?",["Agriculture","Car manufacturing","Oil refining","Digital banking"],0,"Andean communities cultivated crops adapted to different elevations."),
+U("Q38","economics","medium","Why were llamas important to the Inca economy?",["They transported goods and provided wool and meat","They pulled large wheeled wagons","They produced cacao","They were used mainly for ocean fishing"],0,"Llamas were pack animals and provided useful resources."),
+U("Q39","economics","medium","How did the Inca state redistribute goods and supplies?",["Through state storehouses and organized labor systems","Through modern banks","Only through overseas trade","By printing paper money"],0,"State storehouses helped supply armies, officials, and communities."),
+U("Q40","economics","hard","Why were different ecological zones important to Andean economies?",["They allowed access to diverse crops and resources","They eliminated the need for roads","They made all regions grow identical crops","They prevented exchange between communities"],0,"Different elevations supported complementary products and exchanges."),
+U("Q03","culture","easy","Which civilization developed a sophisticated writing system using glyphs?",["Inca","Maya","Moche","Chavín"],1,"The Maya used hieroglyphic writing to record history and other information."),
+U("Q11","culture","hard","Which deity was strongly associated with the sun and war in Aztec religion?",["Inti","Huitzilopochtli","Viracocha","Chaac"],1,"Huitzilopochtli was an important Aztec deity associated with the sun and warfare."),
+U("Q15","culture","hard","Which Maya site is famous for the Temple of the Inscriptions?",["Teotihuacan","Palenque","Chan Chan","Tiwanaku"],1,"Palenque is famous for the Temple of the Inscriptions and the tomb of Pakal."),
+U("Q19","culture","easy","Which civilization is famous for giant geoglyphs in the desert?",["Wari","Chimú","Caral","Nazca"],3,"The Nazca Lines include large geometric figures and animal shapes."),
+U("Q21","culture","medium","Which civilization is known for the ceremonial center of Chavín de Huántar?",["Chimú","Inca","Chavín","Maya"],2,"Chavín de Huántar was an important religious and ceremonial center."),
+U("Q22","culture","medium","Which civilization is especially famous for realistic portrait pottery?",["Caral","Moche","Wari","Nazca"],1,"Moche artisans produced detailed ceramic portraits."),
+// ---------- SET 2: First World War & Russian Revolution ----------
+W("Q01","history","easy","WWI","In which year did the First World War begin?",["1912","1914","1917","1919"],1,"World War I began in 1914."),
+W("Q02","history","easy","WWI","Whose assassination triggered the July Crisis of 1914?",["Archduke Franz Ferdinand","Vladimir Lenin","Woodrow Wilson","Tsar Nicholas II"],0,"Archduke Franz Ferdinand was assassinated in Sarajevo on June 28, 1914."),
+W("Q03","history","medium","WWI","Which battle in 1916 became a symbol of prolonged fighting between France and Germany?",["Battle of Waterloo","Battle of Verdun","Battle of Hastings","Battle of Stalingrad"],1,"The Battle of Verdun lasted much of 1916 and caused enormous casualties."),
+W("Q04","history","medium","WWI","What event helped bring the United States into World War I in 1917?",["The fall of Constantinople","The Russian Civil War","Germany's unrestricted submarine warfare","The construction of the Berlin Wall"],2,"Germany resumed unrestricted submarine warfare; the Zimmermann Telegram also influenced US opinion."),
+W("Q05","history","hard","WWI","On what date did the armistice end fighting on the Western Front?",["June 28, 1919","November 11, 1918","August 4, 1914","March 3, 1918"],1,"The armistice took effect on November 11, 1918."),
+W("Q06","history","easy","Russian Revolution","Who was the last tsar of Russia?",["Alexander II","Peter the Great","Nicholas II","Joseph Stalin"],2,"Nicholas II abdicated during the February Revolution in 1917."),
+W("Q07","history","medium","Russian Revolution","Which event brought the Bolsheviks to power in Petrograd?",["The October Revolution","The Decembrist Revolt","The Crimean War","The February Revolution"],0,"The Bolsheviks seized key institutions in Petrograd during the October Revolution of 1917."),
+W("Q08","history","hard","Russian Revolution","Why are the February and October Revolutions dated differently in some sources?",["Russia used a different calendar in 1917","Russia had two time zones","The events occurred in separate centuries","The dates were never recorded"],0,"Russia then used the Julian calendar, which differed from the Gregorian calendar used in much of Europe."),
+W("Q09","geography","easy","WWI","In which city was Archduke Franz Ferdinand assassinated?",["Paris","Sarajevo","London","Moscow"],1,"The assassination occurred in Sarajevo, then part of Austria-Hungary."),
+W("Q10","geography","easy","WWI","Which country was invaded by Germany in August 1914 as part of its western offensive?",["Belgium","Spain","Sweden","Switzerland"],0,"Germany invaded neutral Belgium while advancing toward France."),
+W("Q11","geography","medium","WWI","Where was the Western Front mainly located?",["France and Belgium","India and China","Brazil and Argentina","Norway and Finland"],0,"Much of the Western Front ran through France and Belgium."),
+W("Q12","geography","medium","WWI","Which strait was a key objective of the Gallipoli campaign?",["Strait of Gibraltar","Strait of Malacca","Dardanelles","Bering Strait"],2,"The Allies sought to control the Dardanelles and open a sea route toward Russia."),
+W("Q13","geography","hard","WWI","Which region did Italy hope to gain from Austria-Hungary during World War I?",["Trentino and South Tyrol","Siberia","Normandy","The Ruhr"],0,"Italian territorial ambitions included Trentino and South Tyrol."),
+W("Q14","geography","easy","Russian Revolution","What is the present-day name of Petrograd, a major center of the 1917 revolutions?",["Kyiv","St. Petersburg","Warsaw","Minsk"],1,"Petrograd is now called St. Petersburg."),
+W("Q15","geography","medium","Russian Revolution","Which city became the capital of Soviet Russia in 1918?",["Moscow","Odessa","Vladivostok","Riga"],0,"The Bolshevik government moved the capital from Petrograd to Moscow in 1918."),
+W("Q16","geography","hard","Russian Revolution","Which treaty led Soviet Russia to surrender large western territories in 1918?",["Treaty of Versailles","Treaty of Brest-Litovsk","Treaty of Tordesillas","Treaty of Paris (1783)"],1,"The Treaty of Brest-Litovsk ended Russia's participation in World War I at major territorial cost."),
+W("Q17","civics","easy","WWI","Which countries formed the core of the Triple Entente before World War I?",["Germany, Austria-Hungary, Italy","Britain, France, Russia","France, Spain, Portugal","Russia, Japan, China"],1,"Britain, France, and Russia formed the core of the Triple Entente."),
+W("Q18","civics","medium","WWI","What was the main purpose of the League of Nations?",["To promote international cooperation and prevent wars","To restore all European monarchies","To create a single world currency","To control all national elections"],0,"The League of Nations was founded to encourage cooperation and collective security."),
+W("Q19","civics","medium","WWI","What did Article 231 of the Treaty of Versailles address?",["Responsibility for war-related losses and damage","The creation of the United Nations","Women's voting rights","The abolition of borders"],0,"Article 231 assigned responsibility to Germany and its allies for losses and damage resulting from the war."),
+W("Q20","civics","hard","WWI","Why did the US Senate reject membership in the League of Nations?",["Concerns about sovereignty and obligations to collective security","The League was based in Moscow","The League banned US trade","The US had not participated in the war"],0,"Many senators feared that League commitments could limit independent US decisions."),
+W("Q21","civics","easy","Russian Revolution","What type of government ruled Russia before the February Revolution?",["A constitutional republic","A tsarist monarchy","A communist federation","A parliamentary democracy with universal suffrage"],1,"Russia was ruled by the Romanov monarchy before Nicholas II abdicated."),
+W("Q22","civics","medium","Russian Revolution","What were soviets during the Russian Revolution?",["Councils of workers, soldiers, and sometimes peasants","Imperial courts","Foreign embassies","Private banks"],0,"Soviets were representative councils that became important centers of political power."),
+W("Q23","civics","medium","Russian Revolution","Who led the Bolshevik Party in 1917?",["Leon Trotsky","Vladimir Lenin","Nicholas II","Alexander Kerensky"],1,"Vladimir Lenin was the leading figure of the Bolshevik Party."),
+W("Q24","civics","hard","Russian Revolution","What does “dual power” describe after the February Revolution?",["Power shared uneasily by the Provisional Government and Petrograd Soviet","Two tsars ruling together","Two foreign armies occupying Russia","A federation of two countries"],0,"The Provisional Government and the Petrograd Soviet exercised competing forms of authority."),
+W("Q25","economics","easy","WWI","What does rationing mean during wartime?",["Limiting how much of scarce goods people can buy","Giving every soldier a medal","Stopping all farming","Printing only coins"],0,"Governments rationed scarce food and other essential supplies."),
+W("Q26","economics","medium","WWI","Why did many governments sell war bonds?",["To raise money to finance military spending","To replace all taxes forever","To pay only foreign tourists","To abolish national debt immediately"],0,"War bonds allowed governments to borrow money from investors and citizens."),
+W("Q27","economics","medium","WWI","How did World War I change many women's roles in the workforce?",["More women entered jobs previously dominated by men","Women stopped working in factories","All women became soldiers","Women were legally barred from agriculture everywhere"],0,"Women filled many industrial, transport, and other roles while men served in the armed forces."),
+W("Q28","economics","hard","WWI","Which economic burden did the Treaty of Versailles impose on Germany?",["Reparations payments","A ban on all agriculture","Mandatory adoption of the US dollar","Free imports from every country"],0,"The treaty required Germany to pay reparations, with amounts settled afterward."),
+W("Q29","economics","easy","Russian Revolution","Which economic problem contributed to unrest in Russian cities in 1917?",["Food shortages and rising prices","An oversupply of affordable bread","A sudden end to taxation","Unlimited factory wages"],0,"Shortages, inflation, and hardship intensified popular anger."),
+W("Q30","economics","medium","Russian Revolution","What did the Bolshevik slogan “Peace, Land, Bread” promise?",["An end to war, land reform, and relief from shortages","A return to absolute monarchy","More fighting and higher taxes","A ban on farming"],0,"The slogan addressed soldiers' desire for peace, peasants' demands for land, and urban hunger."),
+W("Q31","economics","medium","Russian Revolution","What was a major feature of War Communism during the Russian Civil War?",["State control of major industries and grain requisitioning","Complete free-market privatization","Foreign control of all farms","A return to feudal labor"],0,"War Communism included nationalization and compulsory grain procurement."),
+W("Q32","economics","hard","Russian Revolution","Why did Lenin introduce the New Economic Policy (NEP) in 1921?",["To revive the damaged economy by allowing limited private trade","To restore the tsar","To join the Central Powers","To eliminate all market activity"],0,"The NEP permitted limited market activity after economic collapse and unrest."),
+W("Q33","culture","easy","WWI","What was trench warfare?",["Fighting from networks of defensive trenches","Fighting only at sea","Fighting without weapons","Fighting exclusively from aircraft"],0,"Trenches protected troops but contributed to dangerous, prolonged stalemates."),
+W("Q34","culture","medium","WWI","What was propaganda used for during World War I?",["To influence public opinion and support the war effort","To replace military training","To predict earthquakes","To create new calendars"],0,"Posters, newspapers, and other media encouraged enlistment, sacrifice, and support."),
+W("Q35","culture","medium","WWI","Which phrase is associated with remembrance of World War I soldiers?",["Lest we forget","Veni, vidi, vici","Eureka!","Carpe diem"],0,"“Lest we forget” is widely used in remembrance ceremonies."),
+W("Q36","culture","hard","WWI","Which artistic movement emerged during World War I and challenged traditional ideas about art?",["Dada","Renaissance","Baroque","Neoclassicism"],0,"Dada emerged amid wartime disillusionment and rejected conventional artistic norms."),
+W("Q37","culture","easy","Russian Revolution","Which symbol became strongly associated with communist movements?",["Hammer and sickle","Olive branch and dove","Crown and scepter","Compass and anchor"],0,"The hammer and sickle symbolized industrial workers and peasants."),
+W("Q38","culture","medium","Russian Revolution","What was a central demand in many Russian workers' demonstrations in early 1917?",["Bread and improved living conditions","The restoration of serfdom","More imperial wars","The abolition of all factories"],0,"Demonstrations were fueled by food shortages, hardship, and opposition to the war."),
+W("Q39","culture","medium","Russian Revolution","Which term refers to the radical workers' and soldiers' movement led by Lenin's party?",["Bolsheviks","Jacobites","Suffragettes","Chartists"],0,"The Bolsheviks sought revolutionary socialist change and took power in October 1917."),
+W("Q40","culture","hard","Russian Revolution","What was Socialist Realism, later promoted as official Soviet art?",["Art presenting idealized socialist life and values","A form of medieval church architecture","A style limited to abstract geometry","An art movement invented by the tsar"],0,"Socialist Realism became official Soviet cultural policy in the 1930s, after the 1917 revolution."),
+// ---------- HISTORY ----------
+Q("history","8","easy","Which civilization built the city of Machu Picchu?",["The Inca","The Maya","The Aztec","The Olmec"],0,"Machu Picchu was built in the 15th century under the Inca ruler Pachacuti."),
+Q("history","8","easy","In what year did Christopher Columbus reach the Americas?",["1492","1521","1453","1519"],0,"Columbus landed on the island of Guanahani on October 12, 1492."),
+Q("history","8","easy","What material did Paleolithic humans mainly use for tools?",["Chipped stone","Cast iron","Bronze","Steel"],0,"Paleolithic means 'old stone': tools were made by striking and chipping rock."),
+Q("history","8","easy","Which river was essential to the rise of Egyptian civilization?",["The Nile","The Tigris","The Ganges","The Danube"],0,"The Nile's annual floods fertilized the land and made farming possible."),
+Q("history","8","medium","Which pre-Columbian people lived on the coast of today's Ecuador and is known for the spondylus shell?",["The Valdivia culture","The Mapuche","The Guarani","The Taino"],0,"Valdivia (c. 3500 BCE) traded spondylus shells and left the Americas' earliest pottery."),
+Q("history","8","medium","What was the main consequence of the invention of writing?",["It allowed laws, accounts and history to be recorded","It ended agriculture","It eliminated trade","It caused the Ice Age"],0,"With writing, memory no longer depended only on speech, and History began."),
+Q("history","8","medium","What does the term 'Neolithic' mark in human history?",["The shift to farming and settled life","The arrival of the automobile","The fall of Rome","The conquest of America"],0,"In the Neolithic, humans domesticated plants and animals and founded the first villages."),
+Q("history","8","hard","Which Mesopotamian legal code is one of the oldest preserved?",["The Code of Hammurabi","The Magna Carta","The Twelve Tables","The Napoleonic Code"],0,"Carved in basalt around 1750 BCE, it applied the law of retaliation: 'an eye for an eye'."),
+Q("history","9","easy","Who led the Battle of Pichincha on May 24, 1822?",["Antonio José de Sucre","Simón Bolívar","José de San Martín","Eugenio Espejo"],0,"Sucre defeated the royalist troops on the slopes of Pichincha, sealing Quito's independence."),
+Q("history","9","easy","Which date is remembered as Quito's First Cry of Independence?",["August 10, 1809","May 24, 1822","October 9, 1820","October 12, 1492"],0,"On August 10, 1809, a junta in Quito refused to recognize the colonial authorities."),
+Q("history","9","easy","Which European empire colonized most of South America?",["The Spanish Empire","The British Empire","The Ottoman Empire","The Russian Empire"],0,"Spain ruled most of the continent, while Portugal controlled Brazil."),
+Q("history","9","medium","What was Ecuadorian territory called within Gran Colombia?",["District of the South","Viceroyalty of the Plata","Captaincy of Chile","Eastern Province"],0,"Between 1822 and 1830, present-day Ecuador was the Southern District of Gran Colombia."),
+Q("history","9","medium","Who was Eugenio Espejo?",["A doctor and writer who foreshadowed independence","A Spanish conquistador","A 20th-century president","A Chilean general"],0,"Espejo denounced colonial abuses and argued for self-government from Quito."),
+Q("history","9","medium","What was the Industrial Revolution?",["The shift from handcraft to machine production","A war between France and Spain","A religious reform","An artistic movement"],0,"It began in England in the late 18th century with the steam engine and textile mills."),
+Q("history","9","hard","Which 1830 event marked Ecuador's birth as a republic?",["The Constituent Assembly of Riobamba","The Treaty of Tordesillas","The Congress of Vienna","The Yalta Conference"],0,"In Riobamba in 1830 the first Constitution of the State of Ecuador was drafted."),
+Q("history","9","hard","What did Ecuador's Liberal Revolution of 1895 bring about?",["The separation of Church and State","The return of Spanish rule","Annexation by Peru","The abolition of Congress"],0,"Led by Eloy Alfaro, it introduced secular schooling, civil registry and civil marriage."),
+Q("history","10","easy","Which world conflict took place between 1939 and 1945?",["World War II","World War I","The Cold War","The Korean War"],0,"It began with Germany's invasion of Poland and ended with Japan's surrender in 1945."),
+Q("history","10","easy","Which wall symbolized Europe's division during the Cold War?",["The Berlin Wall","The Great Wall","Hadrian's Wall","The Western Wall"],0,"Built in 1961 and torn down in 1989, it separated East from West Berlin."),
+Q("history","10","medium","Which organization was created in 1945 to keep world peace?",["The United Nations","NATO","The European Union","OPEC"],0,"The UN was founded after World War II with the signing of the UN Charter in San Francisco."),
+Q("history","10","medium","What was the Cold War?",["The rivalry between the United States and the Soviet Union without direct combat","A war in the Arctic","A conflict between France and Germany","A 19th-century trade war"],0,"It ran from 1947 to 1991 through an arms race, espionage and proxy wars."),
+Q("history","10","medium","Which 1948 document recognized basic rights for every person?",["The Universal Declaration of Human Rights","The Treaty of Versailles","The Peace of Westphalia","The Warsaw Pact"],0,"It was adopted by the UN General Assembly on December 10, 1948."),
+Q("history","10","hard","Which 1941 conflict between Ecuador and Peru led to the Rio Protocol?",["The Amazon border war","The War of the Pacific","The Chaco War","The War of the Triple Alliance"],0,"The 1942 Rio de Janeiro Protocol reduced Ecuador's Amazonian territory."),
+Q("history","10","hard","Which 1789 revolution proclaimed 'liberty, equality, fraternity'?",["The French Revolution","The Russian Revolution","The Mexican Revolution","The Industrial Revolution"],0,"It toppled absolute monarchy and inspired the independence movements in the Americas."),
+Q("history","B1","easy","What did Ecuador sign with Peru in 1998 to close their border dispute?",["The Brasilia Peace Agreement","The Treaty of Tordesillas","The Andean Pact","The Kyoto Protocol"],0,"The Brasilia accord definitively ended more than 150 years of border dispute."),
+Q("history","B1","medium","Under which Spanish institution was the Real Audiencia de Quito created in 1563?",["The Viceroyalty of Peru","The Viceroyalty of New Spain","The Captaincy of Venezuela","The Kingdom of Portugal"],0,"The Audiencia reported to the Viceroyalty of Peru and later to New Granada."),
+Q("history","B1","medium","Which colonial system forced Indigenous people to work for a Spanish holder?",["The encomienda","Feudalism","Barter","The maritime mita"],0,"The encomienda assigned Indigenous people to a Spaniard in exchange for 'protection' and conversion."),
+Q("history","B1","hard","What was an obraje in colonial Quito's economy?",["A textile workshop using forced Indigenous labor","A silver mine","A slave port","A religious court"],0,"Obrajes produced cloth exported to Lima and Potosí and drove the Audiencia's economy."),
+Q("history","B2","medium","Which 20th-century process reshaped land ownership in Ecuador?",["The Agrarian Reform of 1964 and 1973","Dollarization","The July Revolution","The banana boom"],0,"The agrarian reform laws abolished the huasipungo system and redistributed hacienda land."),
+Q("history","B2","medium","Which period in Ecuador is known as the 'oil boom'?",["The 1970s","The 1920s","The 1990s","The 2010s"],0,"Amazon crude exports from 1972 multiplied the state budget."),
+Q("history","B2","hard","What was the Julian Revolution of 1925?",["A military coup that created the Central Bank and reformed the State","A war with Colombia","A religious education reform","An Indigenous uprising"],0,"Young officers ended the dominance of Guayaquil's banks and founded state institutions."),
+Q("history","B3","hard","Which historian proposed studying history in the 'long duration'?",["Fernand Braudel","Herodotus","Karl Marx","Livy"],0,"Braudel, of the Annales school, favored slow structures over isolated events."),
+Q("history","B3","hard","What distinguishes a primary source from a secondary one?",["A primary source comes from the period studied; a secondary one interprets it later","A primary source is always a book","A secondary source is older","There is no real difference"],0,"An 1822 letter is primary; an essay written today about it is secondary."),
+// ---------- GEOGRAPHY ----------
+Q("geography","8","easy","How many continental natural regions does Ecuador have?",["Three: Coast, Highlands and Amazon","Two: North and South","Five","Only one"],0,"Besides the three continental regions there is the insular region of Galápagos."),
+Q("geography","8","easy","Which ocean washes Ecuador's coastline?",["The Pacific","The Atlantic","The Indian","The Arctic"],0,"Ecuador has about 2,237 km of coastline on the Pacific Ocean."),
+Q("geography","8","easy","Which imaginary line divides Earth into northern and southern hemispheres?",["The Equator","The Greenwich meridian","The Tropic of Cancer","The polar circle"],0,"The Equator sits at 0° latitude and crosses Ecuador, giving the country its name."),
+Q("geography","8","easy","Which is the largest continent on Earth?",["Asia","Africa","America","Europe"],0,"Asia covers about 44 million km², roughly 30% of Earth's land."),
+Q("geography","8","medium","Which Ecuadorian province is an archipelago declared a World Natural Heritage site?",["Galápagos","Manabí","Loja","Napo"],0,"Galápagos was among the very first sites inscribed by UNESCO in 1978."),
+Q("geography","8","medium","Which instrument shows the direction of the cardinal points?",["The compass","The thermometer","The barometer","The seismograph"],0,"A compass needle aligns itself with Earth's magnetic field."),
+Q("geography","8","hard","What does a 1:50,000 scale mean on a map?",["1 cm on the map equals 500 m on the ground","The map is 50,000 cm long","There are 50,000 cities","The elevation is 50,000 m"],0,"50,000 cm is 500 m; the larger the denominator, the less detail the map shows."),
+Q("geography","9","easy","Which is Ecuador's highest active volcano?",["Cotopaxi","Chimborazo","Tungurahua","Cayambe"],0,"Cotopaxi reaches 5,897 m and is one of the world's highest active volcanoes."),
+Q("geography","9","easy","Which Ecuadorian mountain has the summit farthest from Earth's center?",["Chimborazo","Everest","Cotopaxi","Antisana"],0,"Because of the equatorial bulge, Chimborazo's summit is farther from Earth's center than Everest's."),
+Q("geography","9","easy","What is the capital of Ecuador?",["Quito","Guayaquil","Cuenca","Ambato"],0,"Quito, at 2,850 m, was named a World Cultural Heritage site in 1978."),
+Q("geography","9","medium","Which cold ocean current cools Ecuador's southern coast?",["The Humboldt Current","The Gulf Stream","The Kuroshio Current","The Canary Current"],0,"The Humboldt Current brings cold water from the south and reduces coastal rainfall."),
+Q("geography","9","medium","Which climate phenomenon brings heavy rain to Ecuador's coast?",["El Niño","Continental drift","A solar eclipse","The southern lights"],0,"El Niño warms the eastern Pacific and multiplies rainfall along the coast."),
+Q("geography","9","medium","What does a contour line show on a topographic map?",["Points at the same elevation","Dirt roads","Underground rivers","Political borders"],0,"The closer the contour lines, the steeper the slope."),
+Q("geography","9","hard","Which tectonic plates cause Ecuador's earthquakes?",["Nazca and South American","African and Eurasian","Pacific and Philippine","Antarctic and Indian"],0,"The Nazca plate subducts beneath the South American plate, producing quakes and volcanoes."),
+Q("geography","10","easy","What is population density?",["The number of inhabitants per square kilometer","A country's total population","The number of cities","The number of births"],0,"It is calculated by dividing total population by the territory's area."),
+Q("geography","10","easy","Which is the world's largest river by discharge?",["The Amazon","The Nile","The Mississippi","The Yangtze"],0,"The Amazon discharges roughly 209,000 m³ of water per second into the Atlantic."),
+Q("geography","10","medium","What does it mean for a country to be megadiverse?",["That it holds an enormous variety of species and ecosystems","That it has many inhabitants","That it has many cities","That it exports many goods"],0,"Ecuador has more species per square kilometer than any other country."),
+Q("geography","10","medium","What is a direct consequence of deforestation in the Amazon?",["Loss of biodiversity and higher CO₂ emissions","Growth of the ozone layer","More rain in deserts","Immediate global cooling"],0,"Trees store carbon; cutting them releases it and destroys unique habitats."),
+Q("geography","10","medium","What is a river basin?",["The territory whose waters drain into the same river","An artificial lake","A dam","A soil type"],0,"It includes the main river, its tributaries and all land that collects rainfall."),
+Q("geography","10","hard","Which map projection distorts the size of countries near the poles?",["The Mercator projection","The Peters projection","The conic projection","The polar azimuthal projection"],0,"Mercator preserves angles for navigation but hugely enlarges Greenland and Russia."),
+Q("geography","B1","easy","Which country borders Ecuador to the north?",["Colombia","Peru","Brazil","Chile"],0,"Ecuador borders Colombia to the north and Peru to the south and east."),
+Q("geography","B1","medium","What is territorial planning?",["Planning how a territory's land and resources are used","Tax collection","The population census","Only road building"],0,"It seeks to balance housing, production, services and environmental protection."),
+Q("geography","B1","medium","Which indicator measures urban growth relative to rural population?",["The urbanization rate","The birth rate","GDP per capita","The price index"],0,"It expresses what share of the population lives in cities and how that changes over time."),
+Q("geography","B1","hard","What characterizes the páramo climate in the Ecuadorian Andes?",["Cold and humid above 3,000 m with tussock-grass vegetation","Dry heat all year","Permanent snow at sea level","Monsoon rains"],0,"The páramo stores water like a sponge and supplies Andean cities."),
+Q("geography","B2","medium","What are ecosystem services?",["Benefits nature provides to societies","Public transport services","Cleaning companies","Educational TV programs"],0,"They include clean water, pollination, climate regulation and carbon capture."),
+Q("geography","B2","medium","What does the Human Development Index measure geographically?",["Health, education and income of the population","A country's area","The number of volcanoes","Average temperature"],0,"It compares quality of life across territories beyond money alone."),
+Q("geography","B2","hard","What is the ecological footprint?",["The land area needed to sustain a population's consumption","Visible air pollution","Daily waste volume","The number of factories"],0,"It is measured in global hectares and compared with available biocapacity."),
+Q("geography","B2","hard","What explains the unique species of the Galápagos?",["Geographic isolation and adaptive evolution","Proximity to Europe","Atlantic currents","The absence of volcanoes"],0,"Isolation produced speciation; Darwin observed it in the finches in 1835."),
+Q("geography","B3","medium","What is a Geographic Information System (GIS)?",["Software that links data to locations on maps","A weather satellite","A kind of digital compass","A travel social network"],0,"GIS overlays layers of information to analyze territories and support decisions."),
+Q("geography","B3","hard","What is the difference between latitude and longitude?",["Latitude measures distance from the Equator; longitude from the Greenwich meridian","They are synonyms","Latitude measures height above sea level","Longitude measures temperature"],0,"Latitude runs 0° to 90° north or south; longitude 0° to 180° east or west."),
+Q("geography","B3","hard","What is the demographic transition?",["The shift from high birth and death rates to low ones","Migration between countries","A currency change","The urbanization of a neighborhood"],0,"It explains population aging in many countries after health and education improve."),
+Q("geography","B3","medium","What social consequence does rural-to-urban migration have?",["Growth of urban peripheries with insufficient services","A drop in world population","The disappearance of cities","An increase in farmed land"],0,"Mass arrival in cities often outpaces housing and transport capacity."),
+// ---------- CIVICS ----------
+Q("civics","8","easy","What is a rule of coexistence?",["An agreement that orders life together","A compulsory punishment","An international law","A municipal tax"],0,"Rules let a group live together with respect and predictability."),
+Q("civics","8","easy","What is the supreme law of Ecuador?",["The Constitution","The Criminal Code","The Traffic Act","The school handbook"],0,"No rule may contradict the Constitution, in force since 2008."),
+Q("civics","8","easy","Which right guarantees that every child can study?",["The right to education","The right to vote","The right to property","The right to trade"],0,"Education is both a right and a duty of the State at all basic levels."),
+Q("civics","8","medium","What does it mean that human rights are universal?",["They belong to every person without distinction","They apply only in Europe","They can be bought","Each company grants them"],0,"They do not depend on nationality, gender, religion or social status."),
+Q("civics","8","medium","What is a civic duty?",["A responsibility that makes everyone's rights possible","An adult privilege","A voluntary option with no effect","A banking procedure"],0,"Obeying the law, paying taxes and caring for public property are civic duties."),
+Q("civics","8","hard","Which body protects children's rights in Ecuador?",["The Ombudsman's Office and child protection boards","The Central Bank","The Foreign Ministry","The Comptroller's Office"],0,"The Ombudsman's Office monitors rights compliance and receives complaints."),
+Q("civics","9","easy","How many branches of State does Ecuador's 2008 Constitution recognize?",["Five","Three","Two","Seven"],0,"Executive, Legislative, Judicial, Electoral, and Transparency and Social Control."),
+Q("civics","9","easy","Who holds executive power in Ecuador?",["The President of the Republic","The National Assembly","The Constitutional Court","The Electoral Council"],0,"The President is head of State and government and directs public administration."),
+Q("civics","9","easy","Which institution writes Ecuador's laws?",["The National Assembly","The Presidency","The National Court","The municipality"],0,"The Assembly debates and approves laws; the Executive may object to them."),
+Q("civics","9","medium","What is participatory democracy?",["A system where citizens take part directly in decisions","Rule by one person","A regime without elections","Company management"],0,"It includes referendums, participatory budgets and citizen oversight."),
+Q("civics","9","medium","At what age is voting compulsory in Ecuador?",["From 18 to 65 years old","Always from 16","From 21","It is never compulsory"],0,"Voting is optional between 16 and 18 and for people over 65."),
+Q("civics","9","medium","What does State secularism mean?",["The State adopts no official religion","All religion is banned","Only one church is allowed","Schools teach theology"],0,"It guarantees freedom of worship and equal treatment of all beliefs."),
+Q("civics","9","hard","What is the 'acción de protección' in Ecuador's legal system?",["A judicial guarantee to protect violated constitutional rights","Private insurance","A special tax","A building permit"],0,"Anyone may file it before a judge when a right is threatened."),
+Q("civics","10","easy","What is universal suffrage?",["The right to vote for all adults","Voting only by property owners","Voting by the military","A lottery system"],0,"It came after long struggles; in Ecuador women have voted since 1929."),
+Q("civics","10","easy","Which international document protects children's rights?",["The Convention on the Rights of the Child","The NATO Charter","A free trade agreement","The Montreal Protocol"],0,"Adopted by the UN in 1989, it is the most widely ratified human rights treaty."),
+Q("civics","10","medium","What is the rule of law?",["A system where rulers and citizens alike are bound by law","Absolute presidential power","A government without institutions","The absence of rules"],0,"It implies legality, separation of powers and control over public power."),
+Q("civics","10","medium","What does interculturality mean in Ecuador?",["Respectful dialogue among diverse peoples and cultures","Imposing one culture","Closing borders","Language uniformity"],0,"The Constitution defines Ecuador as an intercultural and plurinational State."),
+Q("civics","10","medium","What does the Constitutional Court do?",["It interprets the Constitution and reviews whether rules are valid","It collects taxes","It organizes elections","It runs prisons"],0,"It is the country's highest body for constitutional review and interpretation."),
+Q("civics","10","hard","What rights does Ecuador's Constitution recognize for nature?",["The right to exist, persist and regenerate","The right to vote","The right to private property","None"],0,"Ecuador was the first country in the world to recognize rights of nature, in 2008."),
+Q("civics","B1","easy","What is responsible digital citizenship?",["Using technology while respecting one's own and others' rights","Posting without limits","Sharing passwords","Avoiding the internet entirely"],0,"It includes protecting personal data, checking information and not spreading hate."),
+Q("civics","B1","medium","What is the separation of powers and what is it for?",["Dividing State power to prevent abuses","Splitting the national budget","Dividing territory into provinces","Separating schools by age"],0,"Montesquieu formulated it: each branch checks and limits the others."),
+Q("civics","B1","medium","What does it mean for a rule to be 'of public order'?",["That it is mandatory and cannot be changed by private agreement","That it applies only on the street","That each family sets it","That it is optional"],0,"It protects collective interests that outweigh individual will."),
+Q("civics","B1","hard","Which principle says no one may be tried twice for the same act?",["Non bis in idem","Habeas corpus","In dubio pro reo","Pacta sunt servanda"],0,"It is a due-process guarantee recognized by the Constitution."),
+Q("civics","B2","medium","What is citizen participation in social oversight?",["Society monitoring how public affairs are managed","Paying taxes on time","Mandatory attendance at rallies","Buying government bonds"],0,"It is exercised through citizen watchdogs, accountability reports and access to information."),
+Q("civics","B2","medium","What characterizes a plurinational State?",["It recognizes several nationalities within one country","It has several capitals","It allows two currencies","It depends on another State"],0,"It means recognizing Indigenous peoples' languages, authorities and own justice."),
+Q("civics","B2","hard","What is the difference between direct and representative democracy?",["In direct democracy the people decide; in representative democracy they elect delegates","There is no difference","Direct democracy exists only in monarchies","Representative democracy bans voting"],0,"Athens practiced direct democracy; modern States combine both forms."),
+Q("civics","B2","hard","What is accountability reporting?",["The duty to report publicly on the use of resources","A private bank statement","A secret audit","A campaign speech"],0,"It lets citizens evaluate authorities and demand responsibility."),
+Q("civics","B3","medium","What is restorative justice?",["An approach that seeks to repair harm and reintegrate people","A system of harsher prisons","A military court","An automatic fine"],0,"It prioritizes agreement between victim and offender over isolated punishment."),
+Q("civics","B3","hard","What is the principle of progressive realization of rights?",["Rights must expand and never regress","Rights apply by lottery","They are lost with age","They apply only in emergencies"],0,"The State must advance continuously; unjustified regression is prohibited."),
+Q("civics","B3","hard","Which international body judges human rights violations in the Americas?",["The Inter-American Court of Human Rights","The International Criminal Court","The Security Council","The WTO"],0,"Based in Costa Rica, its rulings bind the States that accepted its jurisdiction."),
+Q("civics","B3","medium","What is conscientious objection?",["Refusing a duty that conflicts with deeply held convictions","Protesting in the street","Casting a blank vote","Renouncing citizenship"],0,"It is recognized in the Constitution and usually applies to military service."),
+Q("civics","10","hard","What is due process?",["The set of guarantees that ensure a fair trial","A fast administrative procedure","A traffic law","The order of legislative sessions"],0,"It includes defense, presumption of innocence, an impartial judge and reasoned rulings."),
+// ---------- ECONOMICS ----------
+Q("economics","8","easy","What is barter?",["Exchanging goods without using money","A bank loan","An ancient tax","A kind of coin"],0,"It was the form of trade that existed before money was invented."),
+Q("economics","8","easy","What has been Ecuador's official currency since 2000?",["The US dollar","The sucre","The Andean peso","The euro"],0,"Dollarization replaced the sucre after the 1999 financial crisis."),
+Q("economics","8","easy","What are basic needs?",["What is essential to live, such as food and shelter","Luxury goods","Toys","Trips abroad"],0,"They differ from wants, which are not essential for survival."),
+Q("economics","8","medium","What does it mean for a resource to be scarce?",["That it is limited compared with unlimited needs","That it does not exist","That it is free","That only adults use it"],0,"Scarcity forces choices and is the central problem of economics."),
+Q("economics","8","medium","What is a household budget?",["A plan of a household's income and spending","A state loan","A monthly tax","A compulsory savings account"],0,"It helps anticipate spending, avoid debt and plan savings."),
+Q("economics","8","hard","What is opportunity cost?",["The value of the best alternative given up","A product's final price","A business tax","Transport cost"],0,"If you study instead of working, the opportunity cost is the wage you forgo."),
+Q("economics","9","easy","Which economic sector includes farming and fishing?",["The primary sector","The secondary sector","The tertiary sector","The financial sector"],0,"The primary sector extracts natural resources; the secondary transforms them."),
+Q("economics","9","easy","Besides oil, what is Ecuador's leading traditional export?",["Bananas","Wheat","Cotton","Soybeans"],0,"Ecuador has been the world's leading banana exporter for decades."),
+Q("economics","9","easy","What is supply in economics?",["The quantity of goods producers offer for sale","What consumers want","The electricity price","A kind of tax"],0,"Supply rises when price rises, all else being equal."),
+Q("economics","9","medium","What happens to price if demand rises and supply stays the same?",["The price tends to rise","The price falls","The price disappears","The price is frozen by law"],0,"More buyers chasing the same quantity push the price up."),
+Q("economics","9","medium","What is inflation?",["A general and sustained rise in prices","One product getting dearer","Banks closing","Falling employment"],0,"When prices rise, each dollar buys less: purchasing power falls."),
+Q("economics","9","medium","What does the Central Bank of Ecuador do?",["It manages the monetary system and the country's reserves","It sells farm products","It charges school fees","It prints dollars"],0,"Under dollarization it does not issue dollars but manages reserves, payments and coins."),
+Q("economics","9","hard","What does Gross Domestic Product (GDP) measure?",["The value of all final goods and services produced in a country","The wealth of banks","The number of companies","Total exports"],0,"It is calculated for a set period, usually one year."),
+Q("economics","10","easy","What is saving?",["The share of income that is not consumed","An outstanding debt","A consumption tax","The monthly wage"],0,"Saving covers emergencies and funds future investment."),
+Q("economics","10","easy","What is VAT?",["A value-added tax paid when consuming","A long-term loan","The minimum wage","A state bonus"],0,"The final consumer pays it and the seller collects it for the State."),
+Q("economics","10","medium","What is the trade balance?",["The difference between exports and imports","Total taxes","The State budget","Household savings"],0,"If exports exceed imports, the balance shows a surplus."),
+Q("economics","10","medium","What characterizes the popular and solidarity economy?",["It puts work and cooperation ahead of profit","It operates only in stock markets","It belongs to multinationals","It creates no jobs"],0,"It includes cooperatives, associations and community ventures recognized by the Constitution."),
+Q("economics","10","medium","What is frictional unemployment?",["Unemployment while a person looks for a new job","Unemployment caused by machines","People who will never work","Unemployment caused by strikes"],0,"It is temporary and exists even in healthy, full-employment economies."),
+Q("economics","10","hard","What is a consequence of depending on raw-material exports?",["High vulnerability to falling international prices","Guaranteed stability","Less need to import","Inflation becomes impossible"],0,"Fiscal revenue drops when crude or commodity prices fall."),
+Q("economics","B1","easy","What is an entrepreneurial venture?",["An initiative that creates value using one's own or others' resources","A public-sector job","An inheritance","A bank loan"],0,"It means spotting an opportunity, taking risks and organizing resources."),
+Q("economics","B1","medium","What is the interest rate?",["The price of borrowed money, expressed as a percentage","A share's value","Income tax","Transport cost"],0,"If you borrow 100 at 10% a year, you return 110 after one year."),
+Q("economics","B1","medium","What does dollarization mean for Ecuador's monetary policy?",["The country cannot issue currency or devalue","The country prints more dollars","Prices are set by law","Taxes disappear"],0,"Adopting a foreign currency means giving up the exchange rate as a policy tool."),
+Q("economics","B1","hard","What is the general State budget?",["The annual plan of public revenue and spending","The Central Bank's savings","Corporate debt","Total exports"],0,"The Executive drafts it and the National Assembly approves it each year."),
+Q("economics","B2","medium","What is sustainable development in economic terms?",["Meeting present needs without compromising future generations","Growing as fast as possible","Cutting all consumption to zero","Exporting only raw materials"],0,"It balances economic growth, social equity and environmental care."),
+Q("economics","B2","medium","What is economic globalization?",["The worldwide integration of markets, capital and production","Closing borders","An international tax","The end of trade"],0,"It shortens commercial distances but increases interdependence and competition."),
+Q("economics","B2","hard","What does the Gini coefficient indicate?",["The level of inequality in income distribution","The inflation rate","GDP growth","The number of firms"],0,"It ranges from 0 (perfect equality) to 1 (maximum inequality)."),
+Q("economics","B2","hard","What is external debt?",["What a country owes to foreign creditors","Money lent between families","Overdue taxes","National savings"],0,"Servicing it commits budget that could otherwise fund education or health."),
+Q("economics","B3","medium","What is a product's added value?",["The increase in value contributed at each production stage","The transport price","The final tax","The raw-material cost"],0,"Turning cacao into fine chocolate multiplies its value over the raw bean."),
+Q("economics","B3","hard","What is an expansionary fiscal policy?",["Raising public spending or cutting taxes to stimulate the economy","Raising taxes and cutting spending","Closing foreign trade","Setting prices by decree"],0,"It aims to revive demand in recessions, at the risk of a larger deficit."),
+Q("economics","B3","hard","What is the difference between economic growth and development?",["Growth measures output; development measures well-being and equity","They are exactly the same","Development only measures exports","Growth measures population"],0,"A country's GDP can grow while poverty and inequality remain high."),
+Q("economics","B3","medium","What is fair trade?",["A system that guarantees decent prices to small producers","A tax-free market","Compulsory direct selling","Trade between banks"],0,"It certifies labor conditions and fair payment in chains such as cacao or coffee."),
+Q("economics","10","hard","What was Ecuador's 1999 financial crisis?",["A banking collapse with a bank holiday and frozen deposits","A fall in banana prices","A national teachers' strike","A regional economic earthquake"],0,"It triggered mass emigration and led to dollarization in January 2000."),
+// ---------- CULTURE ----------
+Q("culture","8","easy","What is cultural heritage?",["The goods and traditions inherited from earlier generations","Only new buildings","State money","Current laws"],0,"It can be tangible (buildings, objects) or intangible (festivals, languages, know-how)."),
+Q("culture","8","easy","Alongside Spanish, which language is official in Ecuador's Indigenous areas?",["Kichwa","Guarani","Aymara","Nahuatl"],0,"Kichwa and Shuar are official languages of intercultural relations."),
+Q("culture","8","easy","Which Andean festival celebrates the harvest and the June solstice?",["Inti Raymi","Carnival","La Diablada","Day of the Dead"],0,"Inti Raymi means 'festival of the Sun' in Kichwa and is held every June."),
+Q("culture","8","medium","Which world-famous hat is woven in Montecristi and Cuenca?",["The toquilla straw hat","The Mexican sombrero","The Basque beret","The English bowler"],0,"Its weaving has been Intangible Cultural Heritage of Humanity since 2012."),
+Q("culture","8","medium","What is an oral tradition?",["Knowledge and stories passed on by word of mouth","A printed book","A written rule","A film"],0,"Legends, verses and myths survive thanks to collective memory."),
+Q("culture","8","hard","Which pre-Columbian Ecuadorian culture is known for its large ceramic figures?",["The Jama-Coaque culture","The Nazca culture","The Chavín culture","The Moche culture"],0,"Jama-Coaque, on the Manabí coast, stood out for its ornate pottery."),
+Q("culture","9","easy","Which art form combines body movement and music?",["Dance","Sculpture","Mural painting","Photography"],0,"Dance communicates identity and memory in nearly every culture."),
+Q("culture","9","easy","Which musical genre is considered Ecuador's national emblem?",["The pasillo","The tango","Cumbia","Merengue"],0,"The Ecuadorian pasillo was declared national Intangible Cultural Heritage."),
+Q("culture","9","easy","Which Ecuadorian city was declared World Cultural Heritage in 1999?",["Cuenca","Guayaquil","Manta","Ibarra"],0,"Santa Ana de los Ríos de Cuenca is noted for its colonial and republican historic center."),
+Q("culture","9","medium","What is cultural syncretism?",["The blending of elements from different cultures into a new expression","The disappearance of a culture","Rejection of the foreign","An exact copy of a tradition"],0,"Andean festivals combine Indigenous rituals with the Catholic calendar."),
+Q("culture","9","medium","Which colonial art school flourished in Quito in the 17th and 18th centuries?",["The Quito School","Florentine Baroque","The School of Paris","Flemish Renaissance"],0,"It blended European technique with Indigenous hands and symbols in polychrome carving."),
+Q("culture","9","medium","Which Indigenous nationality lives mainly in the Ecuadorian Amazon?",["The Shuar","The Otavalo","The Saraguro","The Cañari"],0,"The Shuar are one of the country's fourteen recognized nationalities."),
+Q("culture","9","hard","Which Ecuadorian painter is known for 'The Hands of Protest'?",["Oswaldo Guayasamín","Eduardo Kingman","Camilo Egas","Diego Rivera"],0,"Guayasamín portrayed the pain and dignity of Latin American peoples."),
+Q("culture","10","easy","What does it mean for a language to be endangered?",["That few speakers remain and it may stop being passed on","That it is very difficult","That it has no writing system","That it is spoken in several countries"],0,"Each lost language takes with it a unique way of understanding the world."),
+Q("culture","10","easy","What is cultural identity?",["The traits by which a group recognizes itself","An official document","The most spoken language","A passing fashion"],0,"It is built from shared language, history, customs, music and territory."),
+Q("culture","10","medium","Which Ecuadorian author wrote 'Huasipungo'?",["Jorge Icaza","Juan Montalvo","Pablo Palacio","José de la Cuadra"],0,"Published in 1934, it denounces the exploitation of Indigenous laborers on highland estates."),
+Q("culture","10","medium","What characterizes social realism in Ecuadorian literature?",["It portrays inequality and the life of working people","It tells fairy tales","It avoids all conflict","It only describes landscapes"],0,"The Guayaquil Group brought the voice of the montuvio and coastal fisherman to the page."),
+Q("culture","10","medium","What is intangible heritage according to UNESCO?",["Living practices, knowledge and expressions passed between generations","Only stone monuments","Archive documents","Museum artworks"],0,"It includes festivals, music, crafts, cuisine and traditional knowledge."),
+Q("culture","10","hard","Which Ecuadorian holiday combines remembrance of the dead with colada morada?",["Day of the Dead, November 2","Inti Raymi","Guaranda Carnival","La Mama Negra"],0,"Colada morada and bread figures unite pre-Hispanic and Catholic rituals."),
+Q("culture","B1","easy","What is cultural diversity?",["The coexistence of different ways of life and expression in a territory","Having a single language","Uniform customs","Separating groups"],0,"Ecuador recognizes 14 nationalities and 18 Indigenous peoples, plus Afro-Ecuadorians and montuvios."),
+Q("culture","B1","medium","Which Latacunga celebration mixes devotion, dance and mestizo characters?",["La Mama Negra","El Pase del Niño","The Montuvio Rodeo","The Fruit and Flower Festival"],0,"La Mama Negra fuses Indigenous, African and Spanish traditions."),
+Q("culture","B1","medium","What notable cultural contribution came from Afro-Ecuadorians of the Chota Valley?",["Bomba music","The pasacalle","The yaraví","The albazo"],0,"Chota bomba combines African-rooted percussion, singing and dance."),
+Q("culture","B1","hard","What is cultural appropriation?",["Using elements of another culture without acknowledging their origin or meaning","Learning another language","Visiting a museum","Studying ancient history"],0,"It differs from cultural exchange because it involves inequality and symbolic dispossession."),
+Q("culture","B2","medium","What role do museums play in society today?",["Preserving, researching and communicating heritage","Just storing old objects","Selling artworks","Organizing concerts"],0,"Today they are also educational spaces and sites of public debate about memory."),
+Q("culture","B2","medium","What is the cultural industry?",["The set of firms that produce and distribute symbolic goods","Food factories","Artisanal mining","Public transport"],0,"Film, music, publishing and video games create jobs and shape identity."),
+Q("culture","B2","hard","Which concept describes losing one's own cultural traits by adopting those of a dominant group?",["Acculturation","Enculturation","Mestizaje","Literacy"],0,"Enculturation, by contrast, is learning one's own culture from childhood."),
+Q("culture","B2","hard","What characterizes contemporary Latin American art?",["Using multiple languages to question memory, identity and power","Copying classical European art","Rejecting all technique","Avoiding social themes"],0,"Installation, performance and video expand the boundaries of traditional painting."),
+Q("culture","B3","medium","What is a people's historical memory?",["The collective way of remembering and interpreting its past","A private archive","A list of presidents","A school calendar"],0,"Monuments, dates and narratives contest what is remembered and what is forgotten."),
+Q("culture","B3","hard","What does cultural relativism hold?",["That each culture must be understood on its own terms","That one culture is superior to others","That all cultures are identical","That culture does not shape behavior"],0,"It opposes ethnocentrism, which judges others from one's own culture."),
+Q("culture","B3","hard","Which Ecuadorian writer is best known for 'Las Catilinarias'?",["Juan Montalvo","Jorge Enrique Adoum","Alfredo Pareja","Medardo Ángel Silva"],0,"Montalvo, a 19th-century essayist from Ambato, is one of the country's most influential writers."),
+Q("culture","B3","medium","What social function do popular festivals serve?",["They reinforce identity and community bonds","They only create expenses","They replace school","They prevent work"],0,"They gather the community, renew agreements and pass knowledge between generations."),
+Q("culture","10","hard","What is mestizaje in Latin America?",["The process of biological and cultural mixing among Indigenous, European and African peoples","Racial separation","A trade treaty","A literary movement"],0,"It shaped the continent's language, cuisine, religion and music."),
+];
+SEED.forEach(function(q,i){ q.id="s"+i; });
+
+/* ============================ utilities ============================ */
+function lsGet(k,d){ try{var v=localStorage.getItem(k); return v?JSON.parse(v):d;}catch(e){return d;} }
+function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+function lsDel(k){ try{localStorage.removeItem(k);}catch(e){} }
+function uid(p){ return (p||"c")+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function shuffle(a){ var r=a.slice(); for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t;} return r; }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
+function catOf(id){ return CAT_BY_ID[id]||CATS[0]; }
+function levelName(id){ for(var i=0;i<LEVELS.length;i++){ if(LEVELS[i].id===id) return LEVELS[i].name; } return LEVELS[0].name; }
+function setName(id){ return (SET_BY_ID[id]||SET_BY_ID.general).name; }
+
+/* ---- sound ---- */
+var actx=null, soundOn=true;
+function ac(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=false; } } return actx||null; }
+function tone(f1,f2,dur,type,vol,at){
+  if(!soundOn) return;
+  var c=ac(); if(!c) return;
+  try{
+    var t0=c.currentTime+(at||0);
+    var o=c.createOscillator(), g=c.createGain();
+    o.type=type||"triangle"; o.frequency.setValueAtTime(f1,t0);
+    if(f2&&f2!==f1) o.frequency.exponentialRampToValueAtTime(f2,t0+dur);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(vol||0.14,t0+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+dur+0.03);
+  }catch(e){}
+}
+var SFX={
+  click:function(){ tone(520,660,0.07,"square",0.07); },
+  spin:function(){ for(var i=0;i<16;i++) tone(300+i*18,320+i*18,0.07,"sawtooth",0.045,i*0.26); },
+  land:function(){ tone(880,1320,0.18,"triangle",0.16); },
+  good:function(){ [523,659,784,1047].forEach(function(f,i){ tone(f,f,0.16,"triangle",0.13,i*0.085); }); },
+  bad:function(){ tone(220,110,0.42,"sawtooth",0.12); },
+  tick:function(){ tone(1200,1200,0.04,"square",0.05); },
+  unlock:function(){ [523,659,784,1047,1319,1568].forEach(function(f,i){ tone(f,f,0.24,"triangle",0.14,i*0.1); }); },
+  win:function(){ [392,523,659,784,1047,784,1047,1319].forEach(function(f,i){ tone(f,f,0.3,"triangle",0.15,i*0.16); }); }
+};
+
+/* ---- confetti ---- */
+var confettiStop=0, confettiRunning=false;
+function confetti(ms){
+  var cv=document.getElementById("confetti"); if(!cv) return;
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  cv.hidden=false;
+  var ctx=cv.getContext("2d"), parts=[];
+  function size(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
+  size();
+  var cols=["#ffc83d","#ff4f72","#3fc37a","#5d8df3","#f05fc8","#ffffff","#ef8a1c"];
+  for(var i=0;i<160;i++) parts.push({
+    x:Math.random()*cv.width, y:-20-Math.random()*cv.height*0.6,
+    w:5+Math.random()*8, h:7+Math.random()*10,
+    vy:2.2+Math.random()*3.6, vx:-1.6+Math.random()*3.2,
+    r:Math.random()*Math.PI, vr:-0.16+Math.random()*0.32,
+    c:cols[(Math.random()*cols.length)|0]
+  });
+  confettiStop=Date.now()+(ms||4200);
+  if(confettiRunning) return;
+  confettiRunning=true;
+  (function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+      if(p.y>cv.height+30){ p.y=-20; p.x=Math.random()*cv.width; }
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    }
+    if(Date.now()<confettiStop){ requestAnimationFrame(frame); }
+    else { ctx.clearRect(0,0,cv.width,cv.height); cv.hidden=true; confettiRunning=false; }
+  })();
+  window.addEventListener("resize",size);
+}
+
+/* ---- starfield ---- */
+function Stars(){
+  var ref=useRef(null);
+  useEffect(function(){
+    var cv=ref.current; if(!cv) return;
+    var ctx=cv.getContext("2d"), stars=[], raf=0,
+        reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function build(){
+      cv.width=window.innerWidth; cv.height=window.innerHeight; stars=[];
+      var n=Math.min(190,Math.round(cv.width*cv.height/11000));
+      for(var i=0;i<n;i++) stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,
+        r:Math.random()*1.7+0.3,p:Math.random()*Math.PI*2,s:0.012+Math.random()*0.03});
+    }
+    build();
+    function frame(){
+      ctx.clearRect(0,0,cv.width,cv.height);
+      for(var i=0;i<stars.length;i++){
+        var s=stars[i]; s.p+=s.s;
+        ctx.globalAlpha=0.3+Math.abs(Math.sin(s.p))*0.7;
+        ctx.fillStyle=i%9===0?"#ffd97a":"#ffffff";
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.283); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      if(!reduce) raf=requestAnimationFrame(frame);
+    }
+    frame();
+    window.addEventListener("resize",build);
+    return function(){ cancelAnimationFrame(raf); window.removeEventListener("resize",build); };
+  },[]);
+  return html`<canvas id="stars" ref=${ref} aria-hidden="true"></canvas>`;
+}
+
+/* ============================ bank helpers ============================ */
+function defaultBank(){ return clone(SEED); }
+function loadBank(){
+  var b=lsGet("ssc.bank",null);
+  if(!b||!b.length) return defaultBank();
+  /* older saves held a bilingual shape; fall back to the shipped bank rather than an empty one */
+  var ok=b.filter(function(q){ return q&&typeof q.q==="string"&&q.o&&q.o.length===4&&CAT_BY_ID[q.cat]; });
+  return ok.length?ok:defaultBank();
+}
+/* The school level narrows the general bank only: a chosen unit always plays in full. */
+function poolFor(bank,s){
+  var max=LEVEL_ORDER[s.level]; if(max===undefined) max=5;
+  return bank.filter(function(q){
+    var set=q.set||"general";
+    if(s.set!=="all"&&set!==s.set) return false;
+    if(set==="general"&&(LEVEL_ORDER[q.lvl]===undefined||LEVEL_ORDER[q.lvl]>max)) return false;
+    if(s.difficulty!=="mixed"&&q.dif!==s.difficulty) return false;
+    return true;
+  });
+}
+var CSV_HEAD=["id","set","ref","topic","category","level","difficulty","question","a","b","c","d","answer","explanation"];
+function csvCell(v){ v=(v==null?"":String(v)); return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function toCSV(bank){
+  var rows=[CSV_HEAD.join(",")];
+  bank.forEach(function(q){
+    rows.push([q.id,q.set||"general",q.ref||"",q.topic||"",q.cat,q.lvl,q.dif,q.q,
+      q.o[0],q.o[1],q.o[2],q.o[3],"ABCD".charAt(q.a),q.e].map(csvCell).join(","));
+  });
+  return rows.join("\n");
+}
+function parseCSV(text){
+  var rows=[],row=[],cur="",q=false,i=0;
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  for(;i<text.length;i++){
+    var ch=text[i];
+    if(q){
+      if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
+      else cur+=ch;
+    } else if(ch==='"'){ q=true; }
+    else if(ch===","){ row.push(cur); cur=""; }
+    else if(ch==="\n"){ row.push(cur); rows.push(row); row=[]; cur=""; }
+    else cur+=ch;
+  }
+  if(cur!==""||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(function(r){ return r.length>1||r[0]!==""; });
+}
+function normalize(o){
+  if(!o) return null;
+  var cat=String(o.cat||o.category||"").toLowerCase().trim();
+  if(!CAT_BY_ID[cat]) return null;
+  var opts=o.o&&o.o.length?o.o:[o.a,o.b,o.c,o.d];
+  opts=(opts||[]).map(function(x){ return String(x==null?"":x).trim(); });
+  if(opts.length!==4||!opts.every(function(x){return x;})) return null;
+  var a=o.answer;
+  if(a===undefined||a===null||a===""){ a=o.a; }
+  if(typeof a==="string"){
+    var l=a.trim().toUpperCase().charAt(0);
+    a="ABCD".indexOf(l)>=0?"ABCD".indexOf(l):parseInt(a,10);
+  }
+  a=parseInt(a,10); if(isNaN(a)||a<0||a>3) return null;
+  var text=String(o.q||o.question||"").trim(); if(!text) return null;
+  var lvl=String(o.lvl||o.level||"8").trim().toUpperCase().replace("º","");
+  if(LEVEL_ORDER[lvl]===undefined) lvl="8";
+  var dif=String(o.dif||o.difficulty||"medium").toLowerCase().trim();
+  if(DIFFS.indexOf(dif)<0) dif="medium";
+  var set=String(o.set||"custom").toLowerCase().trim();
+  if(!SET_BY_ID[set]) set="custom";
+  return {id:o.id||uid(),set:set,ref:o.ref||"",topic:o.topic||"",cat:cat,lvl:lvl,dif:dif,
+    q:text,o:opts,a:a,e:String(o.e||o.explanation||"").trim()};
+}
+function parseImport(text){
+  text=(text||"").trim(); if(!text) return [];
+  var out=[];
+  if(text.charAt(0)==="["||text.charAt(0)==="{"){
+    var data=JSON.parse(text);
+    if(!Array.isArray(data)) data=data.questions||data.bank||[data];
+    data.forEach(function(o){ var n=normalize(o); if(n) out.push(n); });
+  } else {
+    var rows=parseCSV(text); if(rows.length<2) return [];
+    var head=rows[0].map(function(h){ return String(h).trim().toLowerCase(); });
+    for(var i=1;i<rows.length;i++){
+      var obj={}; head.forEach(function(h,j){ obj[h]=rows[i][j]; });
+      var n=normalize(obj); if(n) out.push(n);
+    }
+  }
+  return out;
+}
+
+/* ============================ small components ============================ */
+function Seg(props){
+  return html`<div class="seg" role="group">${props.items.map(function(it){
+    return html`<button key=${String(it.v)} type="button" aria-pressed=${String(props.value===it.v)}
+      onClick=${function(){ SFX.click(); props.onChange(it.v); }}>${it.l}</button>`;
+  })}</div>`;
+}
+function CharImg(props){
+  var c=catOf(props.cat);
+  return html`<img src=${c.img} alt=${c.name} class=${props.cls||""} style=${props.style||null} draggable="false"/>`;
+}
+function Toast(props){
+  useEffect(function(){ var t=setTimeout(props.onDone,2400); return function(){clearTimeout(t);}; },[]);
+  return html`<div class="toast">${props.msg}</div>`;
+}
+
+/* ============================ wheel ============================ */
+function Wheel(props){
+  var r=96, cx=100, cy=100;
+  function pt(deg,rad){ var a=(deg-90)*Math.PI/180; return [cx+rad*Math.cos(a), cy+rad*Math.sin(a)]; }
+  var sectors=CATS.map(function(c,i){
+    var a1=i*72, a2=a1+72;
+    var p1=pt(a1,r), p2=pt(a2,r), mid=pt(a1+36,62);
+    return html`<g key=${c.id}>
+      <path d=${"M"+cx+","+cy+" L"+p1[0].toFixed(2)+","+p1[1].toFixed(2)+" A"+r+","+r+" 0 0 1 "+p2[0].toFixed(2)+","+p2[1].toFixed(2)+" Z"}
+        fill=${c.color} stroke="#2a1252" stroke-width="2"/>
+      <image href=${c.img} x=${(mid[0]-23).toFixed(2)} y=${(mid[1]-23).toFixed(2)} width="46" height="46"/>
+    </g>`;
+  });
+  return html`<div class="wheel-stage">
+    <div class="wheel-glow"></div>
+    <div class="pointer"></div>
+    <div class=${"wheel-rotor"+(props.spinning?" spin":"")} style=${{transform:"rotate("+props.rot+"deg)"}}>
+      <svg viewBox="0 0 200 200" width="100%" height="100%" aria-hidden="true">
+        <circle cx="100" cy="100" r="99" fill="#2a1252"/>
+        ${sectors}
+        <circle cx="100" cy="100" r="96" fill="none" stroke="#ffc83d" stroke-width="5"/>
+        <circle cx="100" cy="100" r="99" fill="none" stroke="#7a3fc9" stroke-width="3"/>
+      </svg>
+    </div>
+    <button class="spin-hub" onClick=${props.onSpin} disabled=${props.spinning||props.disabled}
+      aria-label=${T.spin}>${props.spinning?T.spinning:T.spin}</button>
+  </div>`;
+}
+
+/* ============================ team rail ============================ */
+function TeamCard(props){
+  var team=props.team, s=props.settings;
+  return html`<div class=${"team-card"+(props.active?" active":"")} style=${{"--tc":team.color}}>
+    <div class="thead">
+      <span class="dot"></span>
+      <span class="tname">${team.name}</span>
+      <span class="score tnum">${team.score}</span>
+    </div>
+    <div class="slots">
+      ${CATS.map(function(c){
+        var got=team.unlocked.indexOf(c.id)>=0;
+        var prog=team.progress[c.id]||0;
+        return html`<div key=${c.id} class=${"slot"+(got?" got":"")} style=${{"--cc":c.color}}
+          title=${c.name+" "+Math.min(prog,s.needed)+"/"+s.needed}>
+          <${CharImg} cat=${c.id} cls=${got?"":"ghost"}/>
+          ${!got?html`<span class="prog" style=${{width:(Math.min(prog,s.needed)/s.needed*100)+"%"}}></span>`:null}
+        </div>`;
+      })}
+    </div>
+    <div class="mini-prog tnum">${team.unlocked.length}/5 ${T.characters} · ${team.hits} ${T.hits} · ${team.misses} ${T.misses}</div>
+  </div>`;
+}
+
+/* ============================ teacher drawer ============================ */
+function Drawer(props){
+  var m=props.match, setM=props.setMatch, s=m.settings;
+  function patchSettings(k,v){
+    setM(function(p){ var ns=Object.assign({},p.settings); ns[k]=v;
+      var np=Object.assign({},p,{settings:ns});
+      if(k==="timer"&&p.phase!=="question") np.timeLeft=v;
+      return np; });
+  }
+  function bump(i,d){
+    setM(function(p){ var ts=clone(p.teams); ts[i].score=Math.max(0,ts[i].score+d); return Object.assign({},p,{teams:ts}); });
+  }
+  function toggleChar(i,cid){
+    setM(function(p){
+      var ts=clone(p.teams), tm=ts[i], k=tm.unlocked.indexOf(cid);
+      if(k>=0){ tm.unlocked.splice(k,1); tm.progress[cid]=0; }
+      else { tm.unlocked.push(cid); tm.progress[cid]=p.settings.needed; }
+      return Object.assign({},p,{teams:ts});
+    });
+  }
+  return html`<aside class="drawer" role="dialog" aria-label=${T.teacher}>
+    <div class="row between">
+      <strong style=${{fontFamily:"var(--f-display)",color:"var(--gold)",letterSpacing:"1px"}}>${T.teacher}</strong>
+      <button class="icon-btn" onClick=${props.onClose} aria-label=${T.close}>✕</button>
+    </div>
+
+    <h3>${T.pause}</h3>
+    <div class="row">
+      <button class=${"btn sm"+(m.paused?"":" ghost")} onClick=${function(){ SFX.click(); setM(function(p){return Object.assign({},p,{paused:!p.paused});}); }}>
+        ${m.paused?T.unpause:T.pause}</button>
+      <button class="btn sm ghost" disabled=${m.phase!=="question"} onClick=${function(){ SFX.click(); props.onSkip(); }}>${T.skip}</button>
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); soundOn=!soundOn; props.onSound(soundOn); }}>
+        ${T.sound}: ${props.soundOn?"ON":"OFF"}</button>
+    </div>
+
+    <h3>${T.adjust}</h3>
+    ${m.teams.map(function(tm,i){ return html`<div key=${tm.id} class="row between" style=${{marginBottom:"8px"}}>
+      <span class="row" style=${{gap:"8px",minWidth:0}}>
+        <span style=${{width:"13px",height:"13px",borderRadius:"50%",background:tm.color,display:"inline-block"}}></span>
+        <b style=${{fontSize:"13px"}}>${tm.name}</b>
+        <span class="tnum muted" style=${{fontSize:"13px"}}>${tm.score}</span>
+      </span>
+      <span class="row">
+        <button class="btn sm ghost" onClick=${function(){bump(i,-100);}}>−100</button>
+        <button class="btn sm ghost" onClick=${function(){bump(i,100);}}>+100</button>
+      </span></div>`; })}
+
+    <h3>${T.chars}</h3>
+    ${m.teams.map(function(tm,i){ return html`<div key=${tm.id} style=${{marginBottom:"10px"}}>
+      <b style=${{fontSize:"13px"}}>${tm.name}</b>
+      <div class="row" style=${{marginTop:"6px"}}>
+        ${CATS.map(function(c){ var got=tm.unlocked.indexOf(c.id)>=0;
+          return html`<button key=${c.id} class=${"icon-btn"+(got?" on":"")} title=${c.name+" — "+(got?T.revoke:T.grant)}
+            onClick=${function(){ SFX.click(); toggleChar(i,c.id); }}
+            style=${{padding:"2px",overflow:"hidden",borderColor:got?c.color:"rgba(255,255,255,.25)"}}>
+            <${CharImg} cat=${c.id} style=${{width:"100%",opacity:got?1:.4}}/>
+          </button>`; })}
+      </div></div>`; })}
+
+    <h3>${T.setup}</h3>
+    <div class="field"><span class="label">${T.timeLimit}</span>
+      <${Seg} value=${s.timer} onChange=${function(v){patchSettings("timer",v);}}
+        items=${[15,20,30,45,60].map(function(v){return {v:v,l:v+T.sec};})}/></div>
+    <div class="field" style=${{marginTop:"10px"}}><span class="label">${T.needed}</span>
+      <${Seg} value=${s.needed} onChange=${function(v){patchSettings("needed",v);}}
+        items=${[1,2,3].map(function(v){return {v:v,l:String(v)};})}/></div>
+    <div class="field" style=${{marginTop:"10px"}}><span class="label">${T.difficulty}</span>
+      <${Seg} value=${s.difficulty} onChange=${function(v){patchSettings("difficulty",v);}}
+        items=${[{v:"easy",l:T.easy},{v:"medium",l:T.medium},{v:"hard",l:T.hard},{v:"mixed",l:T.mixed}]}/></div>
+    <div class="field" style=${{marginTop:"10px"}}><span class="label">${T.level}</span>
+      <${Seg} value=${s.level} onChange=${function(v){patchSettings("level",v);}}
+        items=${LEVELS.map(function(l){return {v:l.id,l:l.name};})}/></div>
+
+    <h3>${T.review}</h3>
+    ${m.log.length?m.log.slice(0,14).map(function(L,i){
+      return html`<div key=${i} class="log-item" style=${{"--lc":L.ok?"var(--good)":"var(--bad)"}}>
+        <b>${L.team}</b> · ${catOf(L.cat).name} · ${L.ok?"✔":(L.timeout?"⏱":"✘")}<br/>
+        <span class="muted">${L.q}</span></div>`;
+    }):html`<p class="muted" style=${{fontSize:"13px"}}>${T.noLog}</p>`}
+
+    <h3>${T.restart}</h3>
+    <div class="row">
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); props.onRestart(); }}>${T.restart}</button>
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); props.onExit(); }}>${T.exit}</button>
+    </div>
+  </aside>`;
+}
+
+/* ============================ game ============================ */
+function Game(props){
+  var m=props.match, setM=props.setMatch, bank=props.bank;
+  var s=m.settings, team=m.teams[m.turn];
+  var st=useState(0), rot=st[0], setRot=st[1];
+  var sp=useState(false), spinning=sp[0], setSpinning=sp[1];
+  var dr=useState(false), drawer=dr[0], setDrawer=dr[1];
+  var to=useState(null), toast=to[0], setToast=to[1];
+  var timers=useRef([]);
+  useEffect(function(){ return function(){ timers.current.forEach(clearTimeout); }; },[]);
+  function later(fn,ms){ var id=setTimeout(fn,ms); timers.current.push(id); return id; }
+
+  /* timer */
+  useEffect(function(){
+    if(m.phase!=="question"||m.paused) return;
+    var iv=setInterval(function(){
+      setM(function(p){
+        if(p.phase!=="question"||p.paused) return p;
+        return Object.assign({},p,{timeLeft:Math.max(0,Math.round((p.timeLeft-0.25)*100)/100)});
+      });
+    },250);
+    return function(){ clearInterval(iv); };
+  },[m.phase,m.paused]);
+
+  useEffect(function(){
+    if(m.phase==="question"&&m.timeLeft<=0) answer(null);
+  },[m.phase,m.timeLeft]);
+
+  useEffect(function(){
+    if(m.phase==="question"&&!m.paused&&m.timeLeft>0&&m.timeLeft<=5&&m.timeLeft%1===0) SFX.tick();
+  },[m.timeLeft]);
+
+  /* safety net: a team can also reach five characters from the teacher panel */
+  useEffect(function(){
+    if(m.phase==="victory"||m.phase==="unlock"||m.pendingUnlock) return;
+    for(var i=0;i<m.teams.length;i++){
+      if(m.teams[i].unlocked.length>=CATS.length){
+        SFX.win(); confetti(11000);
+        setM(function(p){ return Object.assign({},p,{phase:"victory",winner:i,endedAt:Date.now()}); });
+        return;
+      }
+    }
+  },[m.teams,m.phase]);
+
+  /* keyboard: A-D / 1-4 answer, space spins, Enter continues */
+  useEffect(function(){
+    function onKey(ev){
+      var tag=(ev.target&&ev.target.tagName)||"";
+      if(tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT") return;
+      if(m.paused) return;
+      if(m.phase==="question"){
+        var k=String(ev.key).toLowerCase();
+        var i="abcd".indexOf(k); if(i<0) i="1234".indexOf(k);
+        if(i>=0){ ev.preventDefault(); answer(i); }
+      } else if(m.phase==="spin"&&(ev.key===" "||ev.key==="Enter")){ ev.preventDefault(); spin(); }
+      else if(m.phase==="feedback"&&(ev.key===" "||ev.key==="Enter")){ ev.preventDefault(); cont(); }
+      else if(m.phase==="unlock"&&(ev.key===" "||ev.key==="Enter")){ ev.preventDefault(); collect(); }
+    }
+    window.addEventListener("keydown",onKey);
+    return function(){ window.removeEventListener("keydown",onKey); };
+  },[m,rot,spinning]);
+
+  function resolveAnswer(p,pick){
+    var q=p.q, ok=(pick!==null&&pick===q.a);
+    var teams=clone(p.teams), tm=teams[p.turn], gained=0, unlock=null;
+    if(ok){
+      gained=POINTS[q.dif]||100; tm.score+=gained; tm.hits++;
+      if(tm.unlocked.indexOf(q.cat)<0){
+        tm.progress[q.cat]=(tm.progress[q.cat]||0)+1;
+        if(tm.progress[q.cat]>=p.settings.needed){
+          tm.unlocked.push(q.cat); tm.score+=UNLOCK_BONUS; gained+=UNLOCK_BONUS; unlock=q.cat;
+        }
+      }
+    } else { tm.misses++; }
+    var log=p.log.slice(0,59);
+    log.unshift({team:tm.name,color:tm.color,cat:q.cat,ok:ok,timeout:pick===null,q:q.q,picked:pick});
+    return Object.assign({},p,{phase:"feedback",teams:teams,pick:pick,ok:ok,gained:gained,
+      pendingUnlock:unlock,log:log});
+  }
+  function answer(pick){
+    if(m.phase!=="question") return;
+    var next=resolveAnswer(m,pick);
+    if(next.ok) SFX.good(); else SFX.bad();
+    setM(next);
+  }
+  function cont(){
+    SFX.click();
+    if(m.pendingUnlock){ SFX.unlock(); confetti(2800); setM(Object.assign({},m,{phase:"unlock"})); return; }
+    nextTurn();
+  }
+  function collect(){
+    SFX.click();
+    var tm=m.teams[m.turn];
+    if(tm.unlocked.length>=CATS.length){
+      SFX.win(); confetti(11000);
+      setM(Object.assign({},m,{phase:"victory",winner:m.turn,pendingUnlock:null,endedAt:Date.now()}));
+      return;
+    }
+    setM(Object.assign({},m,{pendingUnlock:null}));
+    later(nextTurn,10);
+  }
+  function nextTurn(){
+    setM(function(p){ return Object.assign({},p,{phase:"spin",turn:(p.turn+1)%p.teams.length,
+      q:null,cat:null,pick:null,ok:null,gained:0,pendingUnlock:null,timeLeft:p.settings.timer,recycled:false}); });
+  }
+  function loadQuestion(catId){
+    setM(function(p){
+      var pool=poolFor(bank,p.settings).filter(function(q){ return q.cat===catId; });
+      if(!pool.length){ return Object.assign({},p,{phase:"spin",cat:null,noPool:true}); }
+      var used=p.used||{};
+      var avail=pool.filter(function(q){ return !used[q.id]; });
+      var recycled=false;
+      if(!avail.length){ used=Object.assign({},used); pool.forEach(function(q){ delete used[q.id]; }); avail=pool; recycled=true; }
+      var q=avail[Math.floor(Math.random()*avail.length)];
+      var order=p.settings.shuffleOpts?shuffle([0,1,2,3]):[0,1,2,3];
+      var prepared={id:q.id,cat:q.cat,dif:q.dif,lvl:q.lvl,ref:q.ref||"",topic:q.topic||"",set:q.set||"general",
+        q:q.q, o:order.map(function(k){return q.o[k];}), a:order.indexOf(q.a), e:q.e};
+      var nu=Object.assign({},used); nu[q.id]=1;
+      return Object.assign({},p,{phase:"question",q:prepared,used:nu,timeLeft:p.settings.timer,
+        pick:null,ok:null,recycled:recycled,noPool:false});
+    });
+  }
+  useEffect(function(){ if(m.noPool){ setToast(T.noQuestions); setM(function(p){return Object.assign({},p,{noPool:false});}); } },[m.noPool]);
+  useEffect(function(){ if(m.recycled){ setToast(T.recycled); setM(function(p){return Object.assign({},p,{recycled:false});}); } },[m.recycled]);
+
+  function spin(){
+    if(spinning||m.phase!=="spin"||m.paused) return;
+    var i=Math.floor(Math.random()*CATS.length);
+    var target=(360-(i*72+36)+360)%360;
+    var delta=(((target-(rot%360))%360)+360)%360;
+    setRot(rot+360*5+delta); setSpinning(true); SFX.spin();
+    later(function(){
+      setSpinning(false); SFX.land();
+      setM(function(p){ return Object.assign({},p,{phase:"reveal",cat:CATS[i].id}); });
+      later(function(){ loadQuestion(CATS[i].id); },1400);
+    },4700);
+  }
+  function skip(){ setDrawer(false); nextTurn(); }
+  function restart(){
+    setDrawer(false);
+    setM(function(p){
+      var ts=p.teams.map(function(tm){ var n=clone(tm); n.score=0; n.hits=0; n.misses=0; n.unlocked=[]; n.progress={}; return n; });
+      return Object.assign({},p,{teams:ts,turn:0,used:{},log:[],phase:"spin",q:null,cat:null,
+        pick:null,ok:null,gained:0,pendingUnlock:null,winner:null,timeLeft:p.settings.timer});
+    });
+  }
+
+  /* ---------- victory ---------- */
+  if(m.phase==="victory"){
+    var w=m.teams[m.winner];
+    var ranked=m.teams.slice().sort(function(a,b){ return (b.unlocked.length-a.unlocked.length)||(b.score-a.score); });
+    return html`<div class="wrap victory">
+      <div class="trophy">🏆</div>
+      <div class="eyebrow">${T.winner}</div>
+      <h2 class="winner-name">${w.name}</h2>
+      <div class="chip tnum" style=${{fontSize:"17px"}}>${T.finalScore}: ${w.score} ${T.pts}</div>
+      <div class="winner-chars">${CATS.map(function(c){ return html`<${CharImg} key=${c.id} cat=${c.id}/>`; })}</div>
+      <div class="panel results">
+        <div class="eyebrow" style=${{marginBottom:"10px"}}>${T.summary}</div>
+        <table><thead><tr>
+          <th>${T.team}</th><th>${T.characters}</th><th>${T.hits}</th><th>${T.misses}</th><th style=${{textAlign:"right"}}>${T.score}</th>
+        </tr></thead><tbody>
+        ${ranked.map(function(tm){ return html`<tr key=${tm.id}>
+          <td><span style=${{display:"inline-block",width:"11px",height:"11px",borderRadius:"50%",background:tm.color,marginRight:"8px"}}></span>${tm.name}</td>
+          <td>${tm.unlocked.map(function(c){ return html`<span key=${c} class="tag cat" style=${{"--cc":catOf(c).color,marginRight:"4px"}}>${catOf(c).name.slice(0,3)}</span>`; })}
+            <span class="muted tnum"> ${tm.unlocked.length}/5</span></td>
+          <td class="tnum">${tm.hits}</td><td class="tnum">${tm.misses}</td><td class="num">${tm.score}</td>
+        </tr>`; })}
+        </tbody></table>
+      </div>
+      <div class="row" style=${{justifyContent:"center"}}>
+        <button class="btn" onClick=${function(){ SFX.click(); restart(); }}>${T.playAgain}</button>
+        <button class="btn ghost" onClick=${function(){ SFX.click(); props.onNewGame(); }}>${T.newGame}</button>
+      </div>
+    </div>`;
+  }
+
+  /* ---------- stage content ---------- */
+  var stage;
+  if(m.phase==="question"||m.phase==="feedback"){
+    var q=m.q, c=catOf(q.cat), done=m.phase==="feedback";
+    var pct=clamp(m.timeLeft/s.timer*100,0,100);
+    stage=html`<div class="qcard">
+      <div class="qhead">
+        <${CharImg} cat=${q.cat}/>
+        <span class="cat" style=${{color:c.color}}>${c.name}</span>
+        <span class="badge">${T[q.dif]} · ${POINTS[q.dif]} ${T.pts}</span>
+        ${q.topic?html`<span class="badge">${q.topic}</span>`
+                 :html`<span class="badge">${levelName(q.lvl)}</span>`}
+        ${q.ref?html`<span class="badge">${q.ref}</span>`:null}
+      </div>
+      <div class="timer-wrap"><div class=${"timer-bar"+(m.timeLeft<=5?" warn":"")} style=${{width:pct+"%"}}></div></div>
+      <h2 class="qtext">${q.q}</h2>
+      <div class="opts">
+        ${q.o.map(function(txt,i){
+          var cls="opt";
+          if(done){
+            if(i===q.a) cls+=" correct";
+            else if(i===m.pick) cls+=" wrong";
+            else cls+=" dim";
+          }
+          return html`<button key=${i} class=${cls} disabled=${done||m.paused}
+            onClick=${function(){ answer(i); }}>
+            <span class="key">${"ABCD".charAt(i)}</span><span>${txt}</span></button>`;
+        })}
+      </div>
+      ${done?html`<div class=${"verdict "+(m.ok?"ok":"no")}>
+          <span class="big">${m.ok?T.correct:(m.pick===null?T.timeup:T.incorrect)}</span>
+          ${m.ok?html`<span class="chip tnum">+${m.gained} ${T.pts}</span>`:null}
+        </div>
+        <div class="panel tight explain">
+          ${!m.ok?html`<b>${T.answerWas}: ${"ABCD".charAt(q.a)}. ${q.o[q.a]}</b><br/>`:null}
+          ${q.e}
+          ${m.ok&&!m.pendingUnlock&&team.unlocked.indexOf(q.cat)>=0?html`<div class="muted" style=${{marginTop:"6px",fontSize:"13px"}}>${T.already}</div>`:null}
+        </div>
+        <button class="btn block" onClick=${cont}>${m.pendingUnlock?T.collect:T.next}</button>`:null}
+    </div>`;
+  } else if(m.phase==="reveal"){
+    var rc=catOf(m.cat);
+    stage=html`<div style=${{display:"flex",flexDirection:"column",alignItems:"center",gap:"18px"}}>
+      <${Wheel} rot=${rot} spinning=${false} disabled=${true} onSpin=${function(){}}/>
+      <div class="cat-reveal"><${CharImg} cat=${m.cat}/>
+        <span class="nm" style=${{color:rc.color}}>${rc.name}</span></div>
+    </div>`;
+  } else {
+    stage=html`<${Wheel} rot=${rot} spinning=${spinning} disabled=${m.paused} onSpin=${spin}/>`;
+  }
+
+  return html`<div class="wrap">
+    <div class="topbar">
+      <span class="brand">SOCIAL STUDIES CHAMPIONS</span>
+      <span class="spacer"></span>
+      ${m.paused?html`<span class="chip" style=${{color:"var(--gold)"}}>⏸ ${T.paused}</span>`:null}
+      <button class="icon-btn" title=${T.sound} onClick=${function(){ soundOn=!soundOn; props.onSound(soundOn); }}>
+        ${props.soundOn?"🔊":"🔇"}</button>
+      <button class="icon-btn" title=${T.teacher} onClick=${function(){ SFX.click(); setDrawer(true); }}>⚙</button>
+    </div>
+    <div class="turn-banner" style=${{"--tc":team.color}}>
+      <span><span class="lbl">${T.turn}</span><br/><span class="who">${team.name}</span></span>
+      <span class="spacer"></span>
+      <span class="chip tnum">${T.score}: ${team.score}</span>
+      <span class="chip tnum">${team.unlocked.length}/5 ★</span>
+    </div>
+    <div class="board">
+      <div class="stage">${stage}</div>
+      <div class="rail">
+        ${m.teams.map(function(tm,i){ return html`<${TeamCard} key=${tm.id} team=${tm} settings=${s} active=${i===m.turn}/>`; })}
+      </div>
+    </div>
+    ${m.phase==="unlock"&&m.pendingUnlock?html`<div class="overlay">
+      <div class="rays"></div>
+      <div class="unlock-card">
+        <div class="eyebrow" style=${{fontSize:"14px"}}>${T.unlocked}</div>
+        <${CharImg} cat=${m.pendingUnlock}/>
+        <h2 style=${{fontFamily:"var(--f-display)",fontSize:"clamp(20px,4vw,34px)",color:catOf(m.pendingUnlock).color}}>
+          ${catOf(m.pendingUnlock).name}</h2>
+        <div class="chip tnum">${team.name} · +${UNLOCK_BONUS} ${T.pts}</div>
+        <button class="btn" onClick=${collect}>${T.collect}</button>
+      </div></div>`:null}
+    ${drawer?html`<${Drawer} match=${m} setMatch=${setM} soundOn=${props.soundOn}
+      onClose=${function(){setDrawer(false);}} onSkip=${skip} onRestart=${restart}
+      onExit=${props.onExit} onSound=${props.onSound}/>`:null}
+    ${toast?html`<${Toast} msg=${toast} onDone=${function(){setToast(null);}}/>`:null}
+  </div>`;
+}
+
+/* ============================ home ============================ */
+function Home(props){
+  return html`<div class="wrap">
+    <div class="topbar">
+      <span class="spacer"></span>
+      <button class="icon-btn" title=${T.sound} onClick=${function(){ soundOn=!soundOn; props.onSound(soundOn); }}>
+        ${props.soundOn?"🔊":"🔇"}</button>
+    </div>
+    <div class="home">
+      <h1 class="logo"><span class="l1">SOCIAL STUDIES</span><span class="l2">CHAMPIONS</span></h1>
+      <p class="tagline">${T.tagline}</p>
+      <div class="char-row">
+        ${CATS.map(function(c){ return html`<div key=${c.id} class="char-pod">
+          <${CharImg} cat=${c.id}/>
+          <span class="nm" style=${{color:c.color}}>${c.name.toUpperCase()}</span>
+        </div>`; })}
+      </div>
+      <div class="home-actions">
+        <button class="btn" onClick=${function(){ SFX.click(); props.go("setup"); }}>${T.start}</button>
+        ${props.hasMatch?html`<button class="btn ghost" onClick=${function(){ SFX.click(); props.go("game"); }}>${T.resume}</button>`:null}
+        <button class="btn ghost" onClick=${function(){ SFX.click(); props.go("howto"); }}>${T.howto}</button>
+        <button class="btn ghost" onClick=${function(){ SFX.click(); props.go("bank"); }}>${T.bank}</button>
+      </div>
+      <p class="home-note">${T.homeNote}</p>
+    </div>
+  </div>`;
+}
+
+/* ============================ how to play ============================ */
+var STEPS=[
+  ["Form the teams","Two to four teams. Each one picks a name and a colour on the setup screen."],
+  ["Spin the wheel","The team on turn presses SPIN. The wheel picks one of the five categories."],
+  ["Answer in time","Four options, one correct. If the clock runs out, it counts as a wrong answer."],
+  ["Collect correct answers","Reaching the required number of correct answers in a category unlocks that character."],
+  ["Pass the turn","After every question the turn moves to the next team, right or wrong."],
+  ["Win the match","The first team to collect all five different characters wins."]
+];
+function HowTo(props){
+  return html`<div class="wrap" style=${{paddingBottom:"40px"}}>
+    <div class="topbar">
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); props.go("home"); }}>← ${T.backHome}</button>
+      <span class="spacer"></span><span class="brand">${T.rulesTitle}</span>
+    </div>
+    <div class="panel" style=${{marginBottom:"16px"}}>
+      <div class="steps">
+        ${STEPS.map(function(s,i){ return html`<div key=${i} class="step">
+          <span class="n">${i+1}</span>
+          <div><h4>${s[0]}</h4><p>${s[1]}</p></div></div>`; })}
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <div class="eyebrow">${T.score}</div>
+        <table style=${{marginTop:"10px",minWidth:0}}><tbody>
+          <tr><td>${T.easy}</td><td class="num">100 ${T.pts}</td></tr>
+          <tr><td>${T.medium}</td><td class="num">200 ${T.pts}</td></tr>
+          <tr><td>${T.hard}</td><td class="num">300 ${T.pts}</td></tr>
+          <tr><td><b>${T.unlocked}</b></td><td class="num">+${UNLOCK_BONUS} ${T.pts}</td></tr>
+        </tbody></table>
+      </div>
+      <div class="panel">
+        <div class="eyebrow">${T.characters}</div>
+        <div style=${{display:"grid",gap:"10px",marginTop:"10px"}}>
+          ${CATS.map(function(c){ return html`<div key=${c.id} class="row" style=${{gap:"12px"}}>
+            <${CharImg} cat=${c.id} style=${{width:"54px"}}/>
+            <b style=${{color:c.color,fontFamily:"var(--f-display)",fontSize:"14px"}}>${c.name.toUpperCase()}</b>
+          </div>`; })}
+        </div>
+      </div>
+    </div>
+    <p class="muted" style=${{marginTop:"14px",fontSize:"13.5px"}}>
+      Keyboard: space bar spins the wheel; A, B, C, D or 1, 2, 3, 4 answer. The gear opens the teacher panel.</p>
+    <div style=${{marginTop:"18px"}}><button class="btn" onClick=${function(){ SFX.click(); props.go("home"); }}>${T.gotIt}</button></div>
+  </div>`;
+}
+
+/* ============================ setup ============================ */
+function Setup(props){
+  var bank=props.bank;
+  var cs=useState(clone(props.settings)), cfg=cs[0], setCfg=cs[1];
+  function patch(k,v){ setCfg(function(p){ var n=Object.assign({},p); n[k]=v; return n; }); }
+  function setCount(n){
+    setCfg(function(p){
+      var ts=p.teams.slice(0,n);
+      while(ts.length<n) ts.push({name:"Team "+(ts.length+1),color:TEAM_COLORS[ts.length]});
+      return Object.assign({},p,{teams:ts});
+    });
+  }
+  function setTeam(i,k,v){ setCfg(function(p){ var ts=clone(p.teams); ts[i][k]=v; return Object.assign({},p,{teams:ts}); }); }
+  var pool=useMemo(function(){ return poolFor(bank,cfg); },[bank,cfg.set,cfg.level,cfg.difficulty]);
+  var perCat=CATS.map(function(c){ return {c:c,n:pool.filter(function(q){return q.cat===c.id;}).length}; });
+  var thin=perCat.some(function(x){ return x.n<cfg.needed*2; });
+  return html`<div class="wrap" style=${{paddingBottom:"40px"}}>
+    <div class="topbar">
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); props.go("home"); }}>← ${T.backHome}</button>
+      <span class="spacer"></span><span class="brand">${T.setup}</span>
+    </div>
+    <div class="panel" style=${{marginBottom:"16px"}}>
+      <div class="field"><span class="label">${T.numTeams}</span>
+        <${Seg} value=${cfg.teams.length} onChange=${setCount}
+          items=${[2,3,4].map(function(n){return {v:n,l:n+" "+T.howManyTeams};})}/></div>
+      <div style=${{display:"grid",gap:"10px",marginTop:"14px"}}>
+        ${cfg.teams.map(function(tm,i){ return html`<div key=${i} class="team-setup" style=${{borderColor:tm.color}}>
+          <div class="field"><span class="label">${T.teamName} ${i+1}</span>
+            <input type="text" id=${"team-name-"+i} value=${tm.name} maxLength="22"
+              onChange=${function(e){ setTeam(i,"name",e.target.value); }}/></div>
+          <div class="field" style=${{flex:"2 1 240px"}}><span class="label">${T.color}</span>
+            <div class="swatches">${TEAM_COLORS.map(function(col){
+              return html`<button key=${col} class="swatch" style=${{background:col}} aria-label=${col}
+                aria-pressed=${String(tm.color===col)} onClick=${function(){ SFX.click(); setTeam(i,"color",col); }}></button>`;
+            })}</div></div>
+        </div>`; })}
+      </div>
+    </div>
+    <div class="panel grid2" style=${{marginBottom:"16px"}}>
+      <div class="field"><span class="label">${T.set}</span>
+        <${Seg} value=${cfg.set} onChange=${function(v){patch("set",v);}}
+          items=${[{v:"wwi",l:SET_BY_ID.wwi.name},{v:"unit",l:SET_BY_ID.unit.name},
+                   {v:"general",l:SET_BY_ID.general.name},{v:"all",l:T.setAll}]}/></div>
+      <div class="field"><span class="label">${T.level}</span>
+        <${Seg} value=${cfg.level} onChange=${function(v){patch("level",v);}}
+          items=${LEVELS.map(function(l){return {v:l.id,l:l.name};})}/>
+        <span class="muted" style=${{fontSize:"12.5px"}}>${T.levelHint}</span></div>
+      <div class="field"><span class="label">${T.difficulty}</span>
+        <${Seg} value=${cfg.difficulty} onChange=${function(v){patch("difficulty",v);}}
+          items=${[{v:"easy",l:T.easy},{v:"medium",l:T.medium},{v:"hard",l:T.hard},{v:"mixed",l:T.mixed}]}/></div>
+      <div class="field"><span class="label">${T.timeLimit}</span>
+        <${Seg} value=${cfg.timer} onChange=${function(v){patch("timer",v);}}
+          items=${[15,20,30,45,60].map(function(v){return {v:v,l:v+" "+T.sec};})}/></div>
+      <div class="field"><span class="label">${T.needed}</span>
+        <${Seg} value=${cfg.needed} onChange=${function(v){patch("needed",v);}}
+          items=${[1,2,3].map(function(v){return {v:v,l:String(v)};})}/></div>
+      <div class="field"><span class="label">${T.options}</span>
+        <${Seg} value=${cfg.shuffleOpts} onChange=${function(v){patch("shuffleOpts",v);}}
+          items=${[{v:true,l:T.shuffleOpts},{v:false,l:"A·B·C·D"}]}/></div>
+    </div>
+    <div class="panel" style=${{marginBottom:"16px"}}>
+      <div class="eyebrow">${pool.length} ${T.available}</div>
+      <div class="row" style=${{marginTop:"10px"}}>
+        ${perCat.map(function(x){ return html`<span key=${x.c.id} class="tag cat" style=${{"--cc":x.c.color}}>
+          ${x.c.name}: ${x.n}</span>`; })}
+      </div>
+      ${thin?html`<p class="muted" style=${{marginTop:"10px",fontSize:"13px"}}>⚠ ${T.shortBank}</p>`:null}
+    </div>
+    <button class="btn block" disabled=${pool.length===0}
+      onClick=${function(){ SFX.click(); props.onStart(cfg); }}>${T.startMatch}</button>
+  </div>`;
+}
+
+/* ============================ question bank ============================ */
+function QForm(props){
+  var st=useState(props.value), v=st[0], setV=st[1];
+  function p(k,val){ setV(function(o){ var n=clone(o); n[k]=val; return n; }); }
+  function po(i,val){ setV(function(o){ var n=clone(o); n.o[i]=val; return n; }); }
+  var valid=String(v.q).trim()&&v.o.every(function(x){return String(x).trim();});
+  return html`<div class="panel" style=${{marginBottom:"14px",borderColor:"var(--gold)"}}>
+    <div class="grid2">
+      <div class="field"><span class="label">${T.category}</span>
+        <${Seg} value=${v.cat} onChange=${function(x){p("cat",x);}} items=${CATS.map(function(c){return {v:c.id,l:c.name};})}/></div>
+      <div class="field"><span class="label">${T.level}</span>
+        <${Seg} value=${v.lvl} onChange=${function(x){p("lvl",x);}} items=${LEVELS.map(function(l){return {v:l.id,l:l.name};})}/></div>
+      <div class="field"><span class="label">${T.difficulty}</span>
+        <${Seg} value=${v.dif} onChange=${function(x){p("dif",x);}} items=${DIFFS.map(function(d){return {v:d,l:T[d]};})}/></div>
+      <div class="field"><span class="label">${T.answer}</span>
+        <${Seg} value=${v.a} onChange=${function(x){p("a",x);}} items=${[0,1,2,3].map(function(i){return {v:i,l:"ABCD".charAt(i)};})}/></div>
+    </div>
+    <div class="field" style=${{marginTop:"14px"}}><span class="label">${T.question}</span>
+      <input type="text" id="qf-q" value=${v.q} onChange=${function(e){ p("q",e.target.value); }}/></div>
+    <div class="field" style=${{marginTop:"14px"}}><span class="label">${T.options}</span>
+      ${[0,1,2,3].map(function(i){ return html`<div key=${i} class="row" style=${{gap:"8px",marginBottom:"6px"}}>
+        <span style=${{width:"30px",height:"30px",display:"grid",placeItems:"center",borderRadius:"8px",
+          background:v.a===i?"var(--good)":"rgba(255,255,255,.14)",fontWeight:900,fontSize:"13px",flex:"0 0 auto"}}>${"ABCD".charAt(i)}</span>
+        <input type="text" id=${"qf-o-"+i} value=${v.o[i]} onChange=${function(e){ po(i,e.target.value); }}/></div>`; })}
+    </div>
+    <div class="field" style=${{marginTop:"14px"}}><span class="label">${T.explanation}</span>
+      <input type="text" id="qf-e" value=${v.e} onChange=${function(e){ p("e",e.target.value); }}/></div>
+    <div class="row" style=${{marginTop:"16px"}}>
+      <button class="btn sm" disabled=${!valid} onClick=${function(){ SFX.click(); props.onSave(v); }}>${T.save}</button>
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); props.onCancel(); }}>${T.cancel}</button>
+    </div>
+  </div>`;
+}
+
+function Bank(props){
+  var bank=props.bank, setBank=props.setBank;
+  var f=useState({cat:"all",lvl:"all",dif:"all",set:"all",q:""}), flt=f[0], setFlt=f[1];
+  var e=useState(null), editing=e[0], setEditing=e[1];
+  var io=useState(null), ioMode=io[0], setIoMode=io[1];
+  var tx=useState(""), text=tx[0], setText=tx[1];
+  var ts=useState(null), toast=ts[0], setToast=ts[1];
+  var fm=useState("json"), fmt=fm[0], setFmt=fm[1];
+  function patch(k,v){ setFlt(function(p){ var n=Object.assign({},p); n[k]=v; return n; }); }
+  var list=useMemo(function(){
+    var needle=flt.q.trim().toLowerCase();
+    return bank.filter(function(q){
+      if(flt.cat!=="all"&&q.cat!==flt.cat) return false;
+      if(flt.lvl!=="all"&&q.lvl!==flt.lvl) return false;
+      if(flt.dif!=="all"&&q.dif!==flt.dif) return false;
+      if(flt.set!=="all"&&(q.set||"general")!==flt.set) return false;
+      if(needle){
+        var hay=(q.q+" "+q.o.join(" ")+" "+(q.ref||"")+" "+(q.topic||"")).toLowerCase();
+        if(hay.indexOf(needle)<0) return false;
+      }
+      return true;
+    });
+  },[bank,flt]);
+  function save(v){
+    var n=normalize(v); if(!n){ setToast(T.badData); return; }
+    setBank(function(b){
+      if(v.id){ return b.map(function(q){ return q.id===v.id?Object.assign(n,{id:v.id,set:q.set,ref:q.ref,topic:q.topic}):q; }); }
+      return b.concat([Object.assign(n,{id:uid(),set:"custom"})]);
+    });
+    setEditing(null); setToast(T.saved);
+  }
+  function del(id){ setBank(function(b){ return b.filter(function(q){ return q.id!==id; }); }); }
+  function blank(){ return {cat:"history",lvl:"8",dif:"easy",q:"",o:["","","",""],a:0,e:""}; }
+  function doExport(kind){ setFmt(kind); setIoMode("export"); setText(kind==="json"?JSON.stringify(bank,null,1):toCSV(bank)); }
+  function doImport(replace){
+    var parsed;
+    try{ parsed=parseImport(text); }catch(err){ parsed=null; }
+    if(!parsed||!parsed.length){ setToast(T.badData); return; }
+    setBank(function(b){ return replace?parsed:b.concat(parsed); });
+    setToast(parsed.length+" "+T.imported); setIoMode(null); setText("");
+  }
+  function selectArea(){ var a=document.getElementById("io-area"); if(a){ a.focus(); a.select(); } }
+  function copyOut(){
+    try{
+      navigator.clipboard.writeText(text).then(function(){ setToast(T.copied); },function(){ selectArea(); });
+    }catch(err){ selectArea(); }
+  }
+  return html`<div class="wrap" style=${{paddingBottom:"40px"}}>
+    <div class="topbar">
+      <button class="btn sm ghost" onClick=${function(){ SFX.click(); props.go("home"); }}>← ${T.backHome}</button>
+      <span class="spacer"></span><span class="brand">${T.bank}</span>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <div class="field"><span class="label">${T.search}</span>
+          <input type="text" id="bank-search" value=${flt.q} placeholder="…" onChange=${function(ev){patch("q",ev.target.value);}}/></div>
+        <div class="field"><span class="label">${T.category}</span>
+          <select id="bank-cat" value=${flt.cat} onChange=${function(ev){patch("cat",ev.target.value);}}>
+            <option value="all">${T.all}</option>
+            ${CATS.map(function(c){ return html`<option key=${c.id} value=${c.id}>${c.name}</option>`; })}
+          </select></div>
+        <div class="field"><span class="label">${T.set}</span>
+          <select id="bank-set" value=${flt.set} onChange=${function(ev){patch("set",ev.target.value);}}>
+            <option value="all">${T.all}</option>
+            ${SETS.map(function(s){ return html`<option key=${s.id} value=${s.id}>${s.name}</option>`; })}
+          </select></div>
+        <div class="field"><span class="label">${T.level}</span>
+          <select id="bank-lvl" value=${flt.lvl} onChange=${function(ev){patch("lvl",ev.target.value);}}>
+            <option value="all">${T.all}</option>
+            ${LEVELS.map(function(l){ return html`<option key=${l.id} value=${l.id}>${l.name}</option>`; })}
+          </select></div>
+        <div class="field"><span class="label">${T.difficulty}</span>
+          <select id="bank-dif" value=${flt.dif} onChange=${function(ev){patch("dif",ev.target.value);}}>
+            <option value="all">${T.all}</option>
+            ${DIFFS.map(function(d){ return html`<option key=${d} value=${d}>${T[d]}</option>`; })}
+          </select></div>
+      </div>
+      <div class="row" style=${{marginTop:"14px"}}>
+        <button class="btn sm" onClick=${function(){ SFX.click(); setEditing(blank()); setIoMode(null); }}>+ ${T.addQ}</button>
+        <button class="btn sm ghost" onClick=${function(){ SFX.click(); setIoMode("import"); setText(""); setEditing(null); }}>${T.importT}</button>
+        <button class="btn sm ghost" onClick=${function(){ SFX.click(); doExport("json"); setEditing(null); }}>${T.exportT} JSON</button>
+        <button class="btn sm ghost" onClick=${function(){ SFX.click(); doExport("csv"); setEditing(null); }}>${T.exportT} CSV</button>
+        <button class="btn sm ghost" onClick=${function(){ SFX.click(); setBank(defaultBank()); setToast(T.restoreDefaults); }}>${T.restoreDefaults}</button>
+        <span class="spacer"></span><span class="chip tnum">${list.length} / ${bank.length}</span>
+      </div>
+    </div>
+
+    ${ioMode==="export"?html`<div class="panel" style=${{marginTop:"14px"}}>
+      <div class="row between"><span class="eyebrow">${T.exportT} · ${fmt.toUpperCase()}</span>
+        <button class="icon-btn" onClick=${function(){setIoMode(null);}} aria-label=${T.close}>✕</button></div>
+      <p class="muted" style=${{fontSize:"13px"}}>${T.exportHint}</p>
+      <textarea id="io-area" readOnly value=${text}></textarea>
+      <div class="row" style=${{marginTop:"10px"}}>
+        <button class="btn sm" onClick=${copyOut}>${T.copy}</button>
+        <button class="btn sm ghost" onClick=${function(){ doExport(fmt==="json"?"csv":"json"); }}>${fmt==="json"?"CSV":"JSON"}</button>
+      </div></div>`:null}
+
+    ${ioMode==="import"?html`<div class="panel" style=${{marginTop:"14px"}}>
+      <div class="row between"><span class="eyebrow">${T.importT}</span>
+        <button class="icon-btn" onClick=${function(){setIoMode(null);}} aria-label=${T.close}>✕</button></div>
+      <p class="muted" style=${{fontSize:"13px"}}>${T.importHint}</p>
+      <textarea id="io-area" value=${text} onChange=${function(ev){ setText(ev.target.value); }}></textarea>
+      <div class="row" style=${{marginTop:"10px"}}>
+        <button class="btn sm" onClick=${function(){ doImport(false); }}>${T.merge}</button>
+        <button class="btn sm ghost" onClick=${function(){ doImport(true); }}>${T.replaceAll}</button>
+      </div></div>`:null}
+
+    ${editing?html`<${QForm} value=${editing} onSave=${save} onCancel=${function(){setEditing(null);}}/>`:null}
+
+    <div class="bank-list">
+      ${list.length?list.map(function(q){
+        var c=catOf(q.cat);
+        return html`<div key=${q.id} class="qrow" style=${{"--cc":c.color}}>
+          <div class="meta">
+            <span class="tag cat" style=${{"--cc":c.color}}>${c.name}</span>
+            <span class="tag">${(SET_BY_ID[q.set||"general"]||SET_BY_ID.general).short}</span>
+            ${q.topic?html`<span class="tag">${q.topic}</span>`:null}
+            <span class="tag">${levelName(q.lvl)}</span>
+            <span class="tag">${T[q.dif]}</span>
+            ${q.ref?html`<span class="tag">${q.ref}</span>`:null}
+            <span style=${{flex:1}}></span>
+            <button class="btn sm ghost" onClick=${function(){ SFX.click(); setEditing(clone(q)); setIoMode(null); window.scrollTo({top:0,behavior:"smooth"}); }}>${T.edit}</button>
+            <button class="btn sm ghost" onClick=${function(){ SFX.click(); del(q.id); }}>${T.del}</button>
+          </div>
+          <div class="qq">${q.q}</div>
+          <div class="ans">${"ABCD".charAt(q.a)}. ${q.o[q.a]}</div>
+          <div class="exp">${q.e}</div>
+        </div>`;
+      }):html`<div class="empty">${T.noQuestions}</div>`}
+    </div>
+    ${toast?html`<${Toast} msg=${toast} onDone=${function(){setToast(null);}}/>`:null}
+  </div>`;
+}
+
+/* ============================ app ============================ */
+var DEFAULT_SETTINGS={
+  teams:[{name:"Team 1",color:TEAM_COLORS[0]},{name:"Team 2",color:TEAM_COLORS[1]}],
+  level:"10", difficulty:"mixed", timer:30, needed:2, set:"wwi", shuffleOpts:true
+};
+function App(){
+  var sc=useState("home"), screen=sc[0], setScreen=sc[1];
+  var bs=useState(loadBank), bank=bs[0], setBank=bs[1];
+  var ss=useState(function(){ return Object.assign({},DEFAULT_SETTINGS,lsGet("ssc.settings",{})); }), settings=ss[0], setSettings=ss[1];
+  var ms=useState(function(){
+    var saved=lsGet("ssc.match",null);
+    if(saved&&saved.teams&&saved.teams.length&&saved.q!==undefined){
+      if(saved.phase==="spinning"||saved.phase==="reveal") saved.phase="spin";
+      if(saved.q&&typeof saved.q.q!=="string") return null;   /* pre-English save */
+      return saved;
+    }
+    return null;
+  }), match=ms[0], setMatch=ms[1];
+  var so=useState(true), sound=so[0], setSound=so[1];
+
+  useEffect(function(){ lsSet("ssc.bank",bank); },[bank]);
+  useEffect(function(){ lsSet("ssc.settings",settings); },[settings]);
+  useEffect(function(){ if(match) lsSet("ssc.match",match); else lsDel("ssc.match"); },[match]);
+  useEffect(function(){ document.documentElement.lang="en"; },[]);
+
+  function start(cfg){
+    setSettings(cfg);
+    var teams=cfg.teams.map(function(tm,i){
+      return {id:"t"+i+"_"+Date.now().toString(36),name:(tm.name||("Team "+(i+1))).trim(),
+        color:tm.color,score:0,hits:0,misses:0,unlocked:[],progress:{}};
+    });
+    setMatch({settings:clone(cfg),teams:teams,turn:0,used:{},log:[],phase:"spin",q:null,cat:null,
+      pick:null,ok:null,gained:0,pendingUnlock:null,winner:null,paused:false,timeLeft:cfg.timer,
+      startedAt:Date.now()});
+    setScreen("game");
+  }
+  function newGame(){ setMatch(null); setScreen("setup"); }
+  function exitHome(){ setScreen("home"); }
+
+  var view;
+  if(screen==="game"&&match){
+    view=html`<${Game} match=${match} setMatch=${setMatch} bank=${bank}
+      soundOn=${sound} onSound=${setSound} onExit=${exitHome} onNewGame=${newGame}/>`;
+  } else if(screen==="setup"){
+    view=html`<${Setup} settings=${settings} bank=${bank} go=${setScreen} onStart=${start}/>`;
+  } else if(screen==="howto"){
+    view=html`<${HowTo} go=${setScreen}/>`;
+  } else if(screen==="bank"){
+    view=html`<${Bank} bank=${bank} setBank=${setBank} go=${setScreen}/>`;
+  } else {
+    view=html`<${Home} go=${setScreen} hasMatch=${!!(match&&match.phase!=="victory")}
+      soundOn=${sound} onSound=${setSound}/>`;
+  }
+  return html`<${React.Fragment}><${Stars}/><div class="app">${view}</div><//>`;
+}
+
+var root=ReactDOM.createRoot(document.getElementById("root"));
+function boot(){ root.render(html`<${App}/>`); }
+if(window.claude&&window.claude.hot&&window.claude.hot.ready){ window.claude.hot.ready(boot); } else { boot(); }
+})();
+</script>
+</body>
+</html>
