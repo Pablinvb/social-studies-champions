@@ -24,7 +24,8 @@ projector or digital whiteboard and start.
 
 ## How a match works
 
-1. Two to four teams, each with a name and a colour.
+1. Two to four teams, each with a name and a colour. They sit around the wheel: two face
+   each other, a third takes the spot below, and a fourth set fills the corners.
 2. The team on turn spins the wheel. It has six slots: the five characters and the crown.
 3. Four options, one correct answer, on a timer. Running out of time counts as wrong.
 4. **Every third correct answer wins a crown.** Landing on the crown slot wins one too.
@@ -72,23 +73,23 @@ CSV columns: `id, set, ref, topic, category, level, difficulty, question, a, b, 
 The gear in the top right opens controls that stay out of the students' way: pause, skip a
 question, adjust any team's score, give or remove a character, hand out a crown, review the
 answers given so far, change the timer, difficulty, school level or crown rule mid-match,
-switch the theme, and restart.
+and restart.
 
 ## Sound and music
 
-Every sound is generated live with the Web Audio API — there are no audio files to load or
-license. A calm arpeggio plays on the menus and board, a pulsing bed runs under each
-question and speeds up in the last seconds, and the wheel, crowns and victory have their
-own cues. Music and effects each have their own switch, with a volume control in the
-teacher panel. Browsers only allow sound after a click, so the music starts on the first
-interaction.
+Short cues — the wheel, a right or wrong answer, a crown, the win — are generated live in
+the browser. **Background music comes from your own MP3 files**: drop them into the
+ folder as , ,  and .
+Any file you leave out stays silent, and  covers for the others if they are
+missing. See  for the details. Music and effects have separate
+switches, with a volume control in the teacher panel. Browsers only allow sound after a
+click, so playback starts on the first interaction.
 
 ## Technical notes
 
 - One HTML file plus six character images. React 18 and htm are loaded from a CDN.
-- Match progress, settings, theme and bank edits live in the browser's `localStorage`,
+- Match progress, settings and bank edits live in the browser's `localStorage`,
   so a half-finished match reappears as **CONTINUE MATCH**.
-- Light and dark themes, switchable from any screen and following the system by default.
 - Designed for projectors and digital whiteboards, and works down to phone width.
 
 ## Deploying your own copy
