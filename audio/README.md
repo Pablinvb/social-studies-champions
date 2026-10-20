@@ -1,20 +1,25 @@
 # Music
 
-Drop your own MP3 files here, with these exact names. Anything you leave out simply
-stays silent — nothing breaks.
+The game looks for these four files. Whatever is missing falls back to another track, and
+if nothing matches, that screen simply plays no music.
 
-| File | When it plays |
-|---|---|
-| `menu.mp3` | Home, setup, how to play and question bank |
-| `board.mp3` | The wheel and the board during a match |
-| `question.mp3` | While a question is on screen |
-| `victory.mp3` | The winner screen (plays once, does not loop) |
+| File | When it plays | Shipped |
+|---|---|---|
+| `menu.mp3` | Intro: home, setup, how to play, question bank | **Social Studies Champions** |
+| `board.mp3` | During play: the wheel, the questions, the crown | **Victory Chimes** |
+| `question.mp3` | Only if you want a separate track for questions | — falls back to `board.mp3` |
+| `victory.mp3` | The winner screen | — falls back to `menu.mp3` |
 
-`menu.mp3` is the fallback: if `board.mp3`, `question.mp3` or `victory.mp3` is missing,
-the menu track keeps playing instead.
+Because `question.mp3` falls back to `board.mp3`, the play track keeps running without
+restarting when a question opens, so the music stays continuous from the wheel through to
+the answer.
 
-All four loop except `victory.mp3`. Keep them reasonably small — a 2–3 MB file per track
-loads quickly over GitHub Pages. Browsers only allow sound after a click, so the music
+All tracks loop except `victory.mp3`, which plays once.
+
+## Replacing a track
+
+Drop a new MP3 in with the matching name and push. Keep files reasonably small — 1 to 3 MB
+each loads quickly over GitHub Pages. Browsers only allow sound after a click, so playback
 starts on the first interaction with the page.
 
 Use music you have the right to publish: these files are served publicly from the site.

@@ -712,9 +712,10 @@ function levelName(id){ for(var i=0;i<LEVELS.length;i++){ if(LEVELS[i].id===id) 
 /* Music comes from real files dropped into audio/ — see the README. Anything missing just
    stays silent. The short cues are still synthesised so the game never waits on a download. */
 var MUSIC_FILES={ menu:"audio/menu.mp3", board:"audio/board.mp3", quiz:"audio/question.mp3", victory:"audio/victory.mp3" };
-var MUSIC_FALLBACK={ board:"menu", quiz:"menu", victory:"menu" };
+/* a missing track borrows another: the play track covers the questions, the intro covers the rest */
+var MUSIC_FALLBACK={ board:"menu", quiz:"board", victory:"menu" };
 var A={ ctx:null, master:null, sfxOn:true, musicOn:true, vol:0.75, noise:null,
-        players:{}, track:null, want:null, unlocked:false };
+        players:{}, track:null, want:null, unlocked:false, probe:null };
 function audioInit(){
   if(A.ctx!==null) return A.ctx;
   try{ A.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ A.ctx=false; return null; }
@@ -729,7 +730,10 @@ function player(name){
   var src=MUSIC_FILES[name]; if(!src){ A.players[name]=null; return null; }
   var el=new Audio(src);
   el.loop=(name!=="victory"); el.preload="auto"; el.volume=0;
-  el.addEventListener("error",function(){ A.players[name]=null; });
+  el.addEventListener("error",function(){
+    A.players[name]=null;                       /* file is not there: fall back and keep playing */
+    if(A.track===name){ A.track=null; if(A.want) musicStart(A.want); }
+  });
   A.players[name]=el;
   return el;
 }
@@ -754,17 +758,30 @@ function musicStart(name){
   A.track=key;
   if(!key) return;
   var el=player(key);
-  try{ el.currentTime=0; var p=el.play(); if(p&&p.catch) p.catch(function(){}); }catch(e){}
+  try{ if(!el.loop) el.currentTime=0; var p=el.play(); if(p&&p.catch) p.catch(function(){}); }catch(e){}
   fade(el,A.vol*0.55,700);
 }
 function musicStop(){
   if(A.track&&A.players[A.track]) fade(A.players[A.track],0,400);
   A.track=null; A.want=null;
 }
+/* Ask once which track files actually exist, so a missing one never interrupts playback. */
+function ensureTracks(){
+  if(A.probe) return A.probe;
+  A.probe=Promise.all(Object.keys(MUSIC_FILES).map(function(name){
+    return fetch(MUSIC_FILES[name],{method:"HEAD"})
+      .then(function(r){ if(!r.ok) A.players[name]=null; })
+      .catch(function(){ A.players[name]=null; });
+  }));
+  return A.probe;
+}
 function audioResume(){
   audioInit();
   if(A.ctx&&A.ctx.state==="suspended"){ try{ A.ctx.resume(); }catch(e){} }
-  if(!A.unlocked){ A.unlocked=true; if(A.want) musicStart(A.want); }
+  if(!A.unlocked){
+    A.unlocked=true;
+    ensureTracks().then(function(){ if(A.want) musicStart(A.want); });
+  }
 }
 function applyAudio(st){
   A.sfxOn=st.sfx; A.musicOn=st.music; A.vol=st.vol;
