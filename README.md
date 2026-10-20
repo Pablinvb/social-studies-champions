@@ -79,11 +79,11 @@ and restart.
 
 Short cues — the wheel, a right or wrong answer, a crown, the win — are generated live in
 the browser. **Background music comes from your own MP3 files**: drop them into the
- folder as , ,  and .
-Any file you leave out stays silent, and  covers for the others if they are
-missing. See  for the details. Music and effects have separate
-switches, with a volume control in the teacher panel. Browsers only allow sound after a
-click, so playback starts on the first interaction.
+`audio/` folder as `menu.mp3`, `board.mp3`, `question.mp3` and `victory.mp3`. Any file you
+leave out stays silent, and `menu.mp3` covers for the others if they are missing. See
+`audio/README.md` for the details. Music and effects have separate switches, with a volume
+control in the teacher panel. Browsers only allow sound after a click, so playback starts
+on the first interaction.
 
 ## Technical notes
 
