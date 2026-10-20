@@ -2,37 +2,44 @@
 
 **Collect the characters. Conquer the knowledge.**
 
-A team trivia game for the Social Studies classroom. Teams spin a wheel, answer questions
-from five categories, and collect one character per category. The first team to collect
-all five characters wins.
+A team trivia game for the Social Studies classroom. Teams spin a wheel, answer questions,
+win crowns, and choose which character to add to their board. The first team holding all
+five characters wins.
 
 **▶ Play: https://pablinvb.github.io/social-studies-champions/**
 
 Runs entirely in the browser. No installation, no accounts, no server — open the link on a
 projector or digital whiteboard and start.
 
-## The five characters
+## The cast
 
-| Category | Character |
+| Character | Subject |
 |---|---|
-| History | Hourglass with a top hat and scroll |
-| Geography | Explorer globe with a compass |
-| Civics | Smiling shield with the scales of justice |
-| Economics | Golden piggy bank with coins |
-| Culture | Painter's palette with brushes and beret |
+| **Cronos the Wise** — hourglass with a top hat and scroll | History |
+| **Globi the Explorer** — globe with a compass and field hat | Geography |
+| **Justi the Leader** — shield with the scales of justice | Civics |
+| **Ahorrito the Genius** — golden piggy bank with coins | Economics |
+| **Arti the Creative** — painter's palette with brushes and beret | Culture |
+| **The Crown** — the sixth slot on the wheel | Wins a character of your choice |
 
 ## How a match works
 
 1. Two to four teams, each with a name and a colour.
-2. The team on turn spins the wheel, which picks one of the five categories.
+2. The team on turn spins the wheel. It has six slots: the five characters and the crown.
 3. Four options, one correct answer, on a timer. Running out of time counts as wrong.
-4. Reaching the required number of correct answers in a category unlocks that character.
-5. The turn passes to the next team after every question, right or wrong.
-6. First team with all five different characters wins.
+4. **Every third correct answer wins a crown.** Landing on the crown slot wins one too.
+5. **A crown is spent on a crown challenge:** the team picks any character it does not yet
+   have and answers one question from that subject. Right, and the character is theirs.
+   Wrong, and the crown is gone.
+6. The first team holding all five characters wins.
 
-**Scoring:** Easy 100 · Medium 200 · Hard 300 · unlocking a character +150.
+**Scoring:** Easy 100 · Medium 200 · Hard 300 · crown earned +50 · character won +150.
 
-**Keyboard:** space bar spins, `A`–`D` or `1`–`4` answer, the gear opens the teacher panel.
+**Keyboard:** space spins, `A`–`D` or `1`–`4` answer, the gear opens the teacher panel.
+
+Teachers who prefer the older rule can switch **How characters are won** to
+*Crowns and category streaks* in the setup screen, which also lets a team unlock a
+character by answering enough questions in its subject.
 
 ## Question bank
 
@@ -45,7 +52,7 @@ projector or digital whiteboard and start.
 | General Social Studies | 160 | History, geography, civics, economics and culture, 8th EGB to 3rd BGU |
 
 Every question carries four options, one correct answer, an explanation shown after the
-team responds, a category and a difficulty. The two units always play in full; the school
+team responds, a subject and a difficulty. The two units always play in full; the school
 level setting narrows the general bank only.
 
 ### Editing questions
@@ -54,8 +61,7 @@ Open **QUESTION BANK** from the home screen to search, filter, add, edit and del
 questions. Changes are saved in that browser only, so each teacher keeps their own version.
 
 - **Export** prints the whole bank as JSON or CSV to copy into a file.
-- **Import** accepts JSON or CSV in that same shape, either merged into the bank or
-  replacing it.
+- **Import** accepts JSON or CSV in that same shape, merged into the bank or replacing it.
 - **Restore original bank** brings back the 240 shipped questions.
 
 CSV columns: `id, set, ref, topic, category, level, difficulty, question, a, b, c, d, answer, explanation`
@@ -64,15 +70,25 @@ CSV columns: `id, set, ref, topic, category, level, difficulty, question, a, b, 
 ## Teacher panel
 
 The gear in the top right opens controls that stay out of the students' way: pause, skip a
-question, adjust any team's score, give or remove a character, review the answers given so
-far, change the timer, difficulty, school level or unlock requirement mid-match, and restart.
+question, adjust any team's score, give or remove a character, hand out a crown, review the
+answers given so far, change the timer, difficulty, school level or crown rule mid-match,
+switch the theme, and restart.
+
+## Sound and music
+
+Every sound is generated live with the Web Audio API — there are no audio files to load or
+license. A calm arpeggio plays on the menus and board, a pulsing bed runs under each
+question and speeds up in the last seconds, and the wheel, crowns and victory have their
+own cues. Music and effects each have their own switch, with a volume control in the
+teacher panel. Browsers only allow sound after a click, so the music starts on the first
+interaction.
 
 ## Technical notes
 
-- One HTML file plus five character images. React 18 and htm are loaded from a CDN.
-- Match progress, settings and bank edits are stored in the browser's `localStorage`,
+- One HTML file plus six character images. React 18 and htm are loaded from a CDN.
+- Match progress, settings, theme and bank edits live in the browser's `localStorage`,
   so a half-finished match reappears as **CONTINUE MATCH**.
-- Sound is generated with the Web Audio API — no audio files. It can be muted from any screen.
+- Light and dark themes, switchable from any screen and following the system by default.
 - Designed for projectors and digital whiteboards, and works down to phone width.
 
 ## Deploying your own copy
