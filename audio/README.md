@@ -8,7 +8,7 @@ if nothing matches, that screen simply plays no music.
 | `menu.mp3` | Intro: home, setup, how to play, question bank | **Social Studies Champions** |
 | `board.mp3` | During play: the wheel, the questions, the crown | **Victory Chimes** |
 | `question.mp3` | Only if you want a separate track for questions | — falls back to `board.mp3` |
-| `victory.mp3` | The winner screen | — falls back to `menu.mp3` |
+| `victory.mp3` | The winner screen | **Victory Fanfare** |
 
 Because `question.mp3` falls back to `board.mp3`, the play track keeps running without
 restarting when a question opens, so the music stays continuous from the wheel through to
