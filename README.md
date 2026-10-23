@@ -50,7 +50,7 @@ round. Once spent, the button stays crossed out for the rest of the game.
 
 | Lifeline | What it does |
 |---|---|
-| **Tablet** | Adds 30 seconds to the question already on screen, on top of whatever time is left |
+| **iPad** | Adds 30 seconds to the question already on screen, on top of whatever time is left |
 | **Ask a rival** | Opens a 15-second window to consult another team. The question clock stops while it runs |
 
 The buttons sit under the four answers and only belong to the team on turn. During an
