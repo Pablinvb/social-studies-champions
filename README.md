@@ -28,6 +28,7 @@ projector or digital whiteboard and start.
    each other, a third takes the spot below, and a fourth set fills the corners.
 2. The team on turn spins the wheel. It has six slots: the five characters and the crown.
 3. Four options, one correct answer, on a timer. Running out of time counts as wrong.
+   A team that is stuck can spend a lifeline (see below).
 4. **Every third correct answer wins a crown.** Landing on the crown slot wins one too.
 5. **A crown is spent on a crown challenge:** the team picks any character it does not yet
    have and answers one question from that subject. Right, and the character is theirs.
@@ -41,6 +42,25 @@ projector or digital whiteboard and start.
 Teachers who prefer the older rule can switch **How characters are won** to
 *Crowns and category streaks* in the setup screen, which also lets a team unlock a
 character by answering enough questions in its subject.
+
+## Lifelines
+
+Each team gets two lifelines, and **one use of each for the whole match** — not once per
+round. Once spent, the button stays crossed out for the rest of the game.
+
+| Lifeline | What it does |
+|---|---|
+| **Tablet** | Adds 30 seconds to the question already on screen, on top of whatever time is left |
+| **Ask a rival** | Opens a 15-second window to consult another team. The question clock stops while it runs |
+
+The buttons sit under the four answers and only belong to the team on turn. During an
+*Ask a rival* window the answers stay live, so a team that works it out early can answer
+straight away or press **Done** to give the clock back.
+
+A third lifeline is planned; the game is built to take it without changing the rules above.
+
+If a team spends one by mistake, the teacher panel has a **Lifelines** row that hands it
+back.
 
 ## Question bank
 
@@ -71,7 +91,7 @@ CSV columns: `id, set, ref, topic, category, level, difficulty, question, a, b, 
 ## Teacher panel
 
 The gear in the top right opens controls that stay out of the students' way: pause, skip a
-question, adjust any team's score, give or remove a character, hand out a crown, review the
+question, adjust any team's score, give or remove a character, hand out a crown, return a spent lifeline, review the
 answers given so far, change the timer, difficulty, school level or crown rule mid-match,
 and restart.
 

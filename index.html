@@ -262,6 +262,26 @@ select option{background:#2b1156;color:#fff}
   padding:14px 16px;font-size:15px;line-height:1.5;color:var(--ink-2);font-weight:600}
 .explain b{color:#fff}
 
+/* lifelines */
+.lifelines{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-top:2px}
+.lifelines .hint{flex:1 1 100%;margin-top:-4px}
+.ll{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-family:var(--f-body);
+  font-size:14px;font-weight:800;color:#fff;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:999px;padding:9px 16px;transition:transform .12s,background .14s,color .14s}
+.ll:hover:not([disabled]){background:var(--gold);color:var(--gold-ink);border-color:transparent;transform:translateY(-2px)}
+.ll:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.ll[disabled]{opacity:.3;cursor:not-allowed}
+.ll[disabled] .nm{text-decoration:line-through}
+.ll .secs{font-variant-numeric:tabular-nums;opacity:.75}
+.ll-mini{display:flex;gap:4px}
+.ll-mini span{display:inline-grid;place-items:center;width:21px;height:21px;border-radius:7px;
+  background:rgba(255,255,255,.14);color:var(--ink-2)}
+.ll-mini span.spent{opacity:.25}
+.consult-num{font-family:var(--f-display);font-size:clamp(56px,15vw,120px);font-weight:700;line-height:1;
+  color:var(--gold);font-variant-numeric:tabular-nums}
+.consult-ring{width:100%;height:10px;border-radius:999px;background:rgba(0,0,0,.32);overflow:hidden}
+.consult-ring i{display:block;height:100%;background:var(--gold);transition:width .25s linear}
+
 /* crown pick */
 .crown-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:12px;width:100%;max-width:720px}
 .pick-btn{display:flex;flex-direction:column;gap:6px;align-items:center;cursor:pointer;padding:12px;
@@ -386,6 +406,11 @@ var POINTS={easy:100,medium:200,hard:300};
 var UNLOCK_BONUS=150;
 var CROWN_BONUS=50;
 var TEAM_COLORS=["#d7395a","#1f8a63","#3362c9","#b8821a","#a4349b","#c05a1c","#1a8a93","#6a46c8"];
+/* Lifelines: one use of each per team for the whole match. A third one is planned. */
+var LIFELINES=[
+  {id:"tablet", secs:30, mode:"extend"},
+  {id:"ask",    secs:15, mode:"consult"}
+];
 
 var T={
   start:"START GAME", howto:"HOW TO PLAY", bank:"QUESTION BANK", resume:"CONTINUE MATCH",
@@ -432,7 +457,12 @@ var T={
   already:"Already collected — this one only scores points.",
   rulesTitle:"How to play", gotIt:"Got it", howManyTeams:"teams",
   sec:"s", grant:"Give", revoke:"Remove", shuffleOpts:"Shuffle the options every time",
-  fixedOpts:"Keep A·B·C·D order", allWon:"Every character is already collected."
+  fixedOpts:"Keep A·B·C·D order", allWon:"Every character is already collected.",
+  lifelines:"Lifelines", llOnce:"One use each per match", llUsed:"Used",
+  llTablet:"Tablet", llTabletHint:"Look it up — 30 seconds more",
+  llAsk:"Ask a rival", llAskHint:"15 seconds to ask another team",
+  consultTitle:"Ask another team", consultSub:"The clock is paused. Answer when you are ready.",
+  consultDone:"Done", llGiveBack:"Return"
 };
 
 /* ============================ question bank ============================ */
@@ -994,6 +1024,19 @@ function Tile(props){
   return html`<div class=${cls} style=${Object.assign(catVars(props.cat),props.style||{})}>
     <img src=${c.img} alt=${c.name} draggable="false"/></div>`;
 }
+function llName(id){ return T["ll"+id.charAt(0).toUpperCase()+id.slice(1)]||id; }
+function llHint(id){ return T["ll"+id.charAt(0).toUpperCase()+id.slice(1)+"Hint"]||""; }
+function freshLifelines(){ var o={}; LIFELINES.forEach(function(l){ o[l.id]=true; }); return o; }
+function LLIcon(props){
+  var sz=props.size||18;
+  if(props.id==="tablet") return html`<svg viewBox="0 0 24 24" width=${sz} height=${sz} fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <rect x="5" y="2.5" width="14" height="19" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>`;
+  return html`<svg viewBox="0 0 24 24" width=${sz} height=${sz} fill="none" stroke="currentColor"
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="9" cy="8" r="3.2"/><path d="M2.8 20c0-3.4 2.8-6.2 6.2-6.2S15.2 16.6 15.2 20"/>
+    <circle cx="17.6" cy="9.8" r="2.3"/><path d="M15.9 14.9c2.9.2 5.3 2.6 5.3 5.1"/></svg>`;
+}
 function Toast(props){
   useEffect(function(){ var t=setTimeout(props.onDone,2500); return function(){clearTimeout(t);}; },[]);
   return html`<div class="toast">${props.msg}</div>`;
@@ -1050,6 +1093,14 @@ function TeamCard(props){
         return html`<span key=${i} class=${"pip"+(i<(team.correct%s.crownEvery)?" on":"")}></span>`;
       })}</span>
       <span>${team.unlocked.length}/5 · ${toCrown} ${T.toNextCrown}</span>
+    </div>
+    <div class="crown-meter">
+      <span class="ll-mini">${LIFELINES.map(function(l){
+        var left=!!(team.lifelines&&team.lifelines[l.id]);
+        return html`<span key=${l.id} class=${left?"":"spent"} title=${llName(l.id)+(left?"":" — "+T.llUsed)}>
+          <${LLIcon} id=${l.id} size=${13}/></span>`;
+      })}</span>
+      <span>${T.lifelines}</span>
     </div>
   </div>`;
 }
@@ -1131,6 +1182,23 @@ function Drawer(props){
           </button>`; })}
       </div></div>`; })}
 
+    <h3>${T.lifelines}</h3>
+    ${m.teams.map(function(tm,i){ return html`<div key=${tm.id} class="row between" style=${{marginBottom:"8px"}}>
+      <b style=${{fontSize:"13.5px"}}>${tm.name}</b>
+      <span class="row" style=${{gap:"6px"}}>
+        ${LIFELINES.map(function(l){
+          var left=!!(tm.lifelines&&tm.lifelines[l.id]);
+          return html`<button key=${l.id} class=${"btn sm"+(left?" ghost":"")}
+            title=${llName(l.id)+" — "+(left?T.llUsed:T.llGiveBack)}
+            onClick=${function(){ sfx("click"); setM(function(p){
+              var ts=clone(p.teams);
+              if(!ts[i].lifelines) ts[i].lifelines=freshLifelines();
+              ts[i].lifelines[l.id]=!ts[i].lifelines[l.id];
+              return Object.assign({},p,{teams:ts});
+            }); }}><${LLIcon} id=${l.id} size=${15}/></button>`;
+        })}
+      </span></div>`; })}
+
     <h3>${T.setup}</h3>
     <div class="field"><span class="label">${T.timeLimit}</span>
       <${Seg} value=${s.timer} onChange=${function(v){patchSettings("timer",v);}}
@@ -1190,10 +1258,10 @@ function Game(props){
   },[m.phase]);
 
   useEffect(function(){
-    if(m.phase!=="question"||m.paused) return;
+    if(m.phase!=="question"||m.paused||m.consult) return;
     var iv=setInterval(function(){
       setM(function(p){
-        if(p.phase!=="question"||p.paused) return p;
+        if(p.phase!=="question"||p.paused||p.consult) return p;
         return Object.assign({},p,{timeLeft:Math.max(0,Math.round((p.timeLeft-0.25)*100)/100)});
       });
     },250);
@@ -1201,8 +1269,24 @@ function Game(props){
   },[m.phase,m.paused]);
   useEffect(function(){ if(m.phase==="question"&&m.timeLeft<=0) answer(null); },[m.phase,m.timeLeft]);
   useEffect(function(){
-    if(m.phase==="question"&&!m.paused&&m.timeLeft>0&&m.timeLeft<=5&&m.timeLeft%1===0) sfx("tick");
+    if(m.phase==="question"&&!m.paused&&!m.consult&&m.timeLeft>0&&m.timeLeft<=5&&m.timeLeft%1===0) sfx("tick");
   },[m.timeLeft]);
+
+  /* the "ask a rival" window runs on its own clock while the question clock waits */
+  useEffect(function(){
+    if(!m.consult||m.paused) return;
+    var iv=setInterval(function(){
+      setM(function(p){
+        if(!p.consult||p.paused) return p;
+        var left=Math.max(0,Math.round((p.consult.left-0.25)*100)/100);
+        return Object.assign({},p,{consult:left<=0?null:{left:left,total:p.consult.total}});
+      });
+    },250);
+    return function(){ clearInterval(iv); };
+  },[!!m.consult,m.paused]);
+  useEffect(function(){
+    if(m.consult&&!m.paused&&m.consult.left>0&&m.consult.left<=5&&m.consult.left%1===0) sfx("tick");
+  },[m.consult&&m.consult.left]);
 
   useEffect(function(){
     if(m.phase==="victory"||m.phase==="unlock"||m.pendingUnlock) return;
@@ -1262,7 +1346,7 @@ function Game(props){
     var log=p.log.slice(0,59);
     log.unshift({team:tm.name,cat:q.cat,ok:ok,timeout:pick===null,crown:!!q.crown,q:q.q});
     return Object.assign({},p,{phase:"feedback",teams:teams,pick:pick,ok:ok,gained:gained,
-      pendingUnlock:unlock,crownEarned:crownEarned,crownLost:crownLost,log:log});
+      pendingUnlock:unlock,crownEarned:crownEarned,crownLost:crownLost,log:log,consult:null});
   }
   function answer(pick){
     if(m.phase!=="question") return;
@@ -1295,12 +1379,32 @@ function Game(props){
     setM(Object.assign({},p,{pendingUnlock:null,crownEarned:false}));
     later(nextTurn,10);
   }
+  /* each lifeline is good once per team for the whole match */
+  function useLifeline(id){
+    if(m.phase!=="question"||m.paused||m.consult) return;
+    var tm=m.teams[m.turn];
+    if(!tm.lifelines||!tm.lifelines[id]) return;
+    var spec=LIFELINES.filter(function(l){ return l.id===id; })[0];
+    if(!spec) return;
+    sfx("crown");
+    setM(function(p){
+      var teams=clone(p.teams);
+      teams[p.turn].lifelines[id]=false;
+      if(spec.mode==="extend"){
+        return Object.assign({},p,{teams:teams,
+          timeLeft:p.timeLeft+spec.secs,
+          timeMax:(p.timeMax||p.settings.timer)+spec.secs});
+      }
+      return Object.assign({},p,{teams:teams,consult:{left:spec.secs,total:spec.secs}});
+    });
+  }
   function toPick(){ sfx("click"); setM(function(p){ return Object.assign({},p,{phase:"crownPick"}); }); }
   function nextTurn(){
     setLanded(false);
     setM(function(p){ return Object.assign({},p,{phase:"spin",turn:(p.turn+1)%p.teams.length,
       q:null,cat:null,pick:null,ok:null,gained:0,pendingUnlock:null,crownEarned:false,
-      crownLost:false,fromWheel:false,timeLeft:p.settings.timer,recycled:false}); });
+      crownLost:false,fromWheel:false,timeLeft:p.settings.timer,timeMax:p.settings.timer,
+      consult:null,recycled:false}); });
   }
   function drawQuestion(p,catId,isCrown){
     var pool=poolFor(bank,p.settings).filter(function(q){ return q.cat===catId; });
@@ -1323,7 +1427,8 @@ function Game(props){
       var teams=p.teams;
       if(isCrown){ teams=clone(p.teams); teams[p.turn].crowns=Math.max(0,teams[p.turn].crowns-1); }
       return Object.assign({},p,{phase:"question",teams:teams,q:d.q,used:d.used,
-        timeLeft:p.settings.timer,pick:null,ok:null,recycled:d.recycled,noPool:false});
+        timeLeft:p.settings.timer,timeMax:p.settings.timer,consult:null,
+        pick:null,ok:null,recycled:d.recycled,noPool:false});
     });
   }
   useEffect(function(){ if(m.noPool){ setToast(T.noQuestions); setM(function(p){return Object.assign({},p,{noPool:false});}); } },[m.noPool]);
@@ -1360,7 +1465,8 @@ function Game(props){
     setDrawer(false); setLanded(false);
     setM(function(p){
       var ts=p.teams.map(function(tm){ var n=clone(tm);
-        n.score=0; n.correct=0; n.wrong=0; n.unlocked=[]; n.progress={}; n.crowns=0; return n; });
+        n.score=0; n.correct=0; n.wrong=0; n.unlocked=[]; n.progress={}; n.crowns=0;
+        n.lifelines=freshLifelines(); return n; });
       return Object.assign({},p,{teams:ts,turn:0,used:{},log:[],phase:"spin",q:null,cat:null,
         pick:null,ok:null,gained:0,pendingUnlock:null,crownEarned:false,crownLost:false,
         fromWheel:false,winner:null,timeLeft:p.settings.timer});
@@ -1402,7 +1508,8 @@ function Game(props){
   var middle;
   if(m.phase==="question"||m.phase==="feedback"){
     var q=m.q, c=catOf(q.cat), done=m.phase==="feedback";
-    var pct=clamp(m.timeLeft/s.timer*100,0,100);
+    var tmax=m.timeMax||s.timer;
+    var pct=clamp(m.timeLeft/tmax*100,0,100);
     middle=html`<div class="qcard" style=${catVars(q.cat)}>
       <div class="qhead">
         <${Tile} cat=${q.cat}/>
@@ -1424,6 +1531,17 @@ function Game(props){
             <span class="key">${"ABCD".charAt(i)}</span><span>${txt}</span></button>`;
         })}
       </div>
+      ${!done?html`<div class="lifelines">
+        ${LIFELINES.map(function(l){
+          var left=!!(team.lifelines&&team.lifelines[l.id]);
+          return html`<button key=${l.id} class="ll" disabled=${!left||!!m.consult}
+            title=${llHint(l.id)} onClick=${function(){ useLifeline(l.id); }}>
+            <${LLIcon} id=${l.id}/>
+            <span class="nm">${llName(l.id)}</span>
+            <span class="secs">${left?"+"+l.secs+"s":T.llUsed}</span></button>`;
+        })}
+        <span class="hint">${T.llOnce}</span>
+      </div>`:null}
       ${done?html`<div class=${"verdict "+(m.ok?"ok":"no")}>
           <span class="big">${m.ok?T.correct:(m.pick===null?T.timeup:T.incorrect)}</span>
           ${m.ok?html`<span class="chip tnum">+${m.gained} ${T.pts}</span>`:null}
@@ -1494,6 +1612,16 @@ function Game(props){
       })}
     </div>
 
+    ${m.consult?html`<div class="overlay">
+      <div class="sheet">
+        <div class="eyebrow">${T.consultTitle}</div>
+        <div style=${{color:"var(--gold)"}}><${LLIcon} id="ask" size=${54}/></div>
+        <div class="consult-num tnum">${Math.ceil(m.consult.left)}</div>
+        <div class="consult-ring"><i style=${{width:(m.consult.left/m.consult.total*100)+"%"}}></i></div>
+        <p class="muted" style=${{fontWeight:700}}>${T.consultSub}</p>
+        <button class="btn lg block" onClick=${function(){ sfx("click"); setM(function(p){ return Object.assign({},p,{consult:null}); }); }}>${T.consultDone}</button>
+      </div></div>`:null}
+
     ${m.phase==="unlock"&&m.pendingUnlock?html`<div class="overlay">
       <div class="rays"></div>
       <div class="sheet" style=${catVars(m.pendingUnlock)}>
@@ -1561,6 +1689,7 @@ var STEPS=[
   ["Form the teams","Two to four teams, each with a name and a colour. They sit around the wheel."],
   ["Spin the wheel","Six slots: the five characters and the Crown."],
   ["Answer in time","Four options, one correct. Running out of time counts as a wrong answer."],
+  ["Spend a lifeline","Stuck? The tablet buys 30 more seconds and asking a rival gives 15 seconds to consult another team. Each team gets one use of each for the whole match."],
   ["Earn crowns","Every third correct answer wins a crown, and landing on the Crown slot wins one too."],
   ["Spend the crown","Pick the character you want and answer one question from that subject. Right, it is yours. Wrong, the crown is gone."],
   ["Win the match","The first team holding all five characters wins."]
@@ -1586,6 +1715,17 @@ function HowTo(props){
           <tr><td>${T.crownWon}</td><td class="num">+${CROWN_BONUS}</td></tr>
           <tr><td><b>${T.unlocked}</b></td><td class="num">+${UNLOCK_BONUS}</td></tr>
         </tbody></table>
+      </div>
+      <div class="card">
+        <div class="eyebrow">${T.lifelines}</div>
+        <div style=${{display:"grid",gap:"12px",marginTop:"12px"}}>
+          ${LIFELINES.map(function(l){ return html`<div key=${l.id} class="row" style=${{gap:"12px",flexWrap:"nowrap"}}>
+            <span style=${{color:"var(--gold)",flex:"0 0 auto"}}><${LLIcon} id=${l.id} size=${26}/></span>
+            <b style=${{fontSize:"15px"}}>${llName(l.id)}
+              <br/><span class="muted" style=${{fontWeight:700,fontSize:"13px"}}>${llHint(l.id)}</span></b>
+          </div>`; })}
+        </div>
+        <p class="hint" style=${{marginTop:"12px"}}>${T.llOnce}</p>
       </div>
       <div class="card">
         <div class="eyebrow">${T.characters}</div>
@@ -1865,6 +2005,10 @@ function App(){
     var saved=lsGet("ssc.match",null);
     if(saved&&saved.teams&&saved.teams.length&&saved.teams[0].crowns!==undefined){
       if(saved.phase==="spinning"||saved.phase==="reveal") saved.phase="spin";
+      /* matches saved before lifelines existed still open cleanly */
+      saved.teams.forEach(function(t){ if(!t.lifelines) t.lifelines=freshLifelines(); });
+      if(saved.timeMax===undefined) saved.timeMax=(saved.settings||{}).timer||30;
+      saved.consult=null;
       return saved;
     }
     return null;
@@ -1890,7 +2034,8 @@ function App(){
     setSettings(cfg);
     var teams=cfg.teams.map(function(tm,i){
       return {id:"t"+i+"_"+Date.now().toString(36),name:(tm.name||("Team "+(i+1))).trim(),
-        color:tm.color,score:0,correct:0,wrong:0,unlocked:[],progress:{},crowns:0};
+        color:tm.color,score:0,correct:0,wrong:0,unlocked:[],progress:{},crowns:0,
+        lifelines:freshLifelines()};
     });
     setMatch({settings:clone(cfg),teams:teams,turn:0,used:{},log:[],phase:"spin",q:null,cat:null,
       pick:null,ok:null,gained:0,pendingUnlock:null,crownEarned:false,crownLost:false,
