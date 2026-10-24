@@ -107,10 +107,20 @@ on the first interaction.
 
 ## Technical notes
 
-- One HTML file plus six character images. React 18 and htm are loaded from a CDN.
+- `src/` holds the source; `index.html` is built from it with `node build.mjs`.
+  Edit the fragments, not the built file.
+- One HTML page plus six character images. React 18 and htm are loaded from a CDN.
 - Match progress, settings and bank edits live in the browser's `localStorage`,
   so a half-finished match reappears as **CONTINUE MATCH**.
 - Designed for projectors and digital whiteboards, and works down to phone width.
+
+## Making a variant
+
+The engine knows nothing about Social Studies — it knows about categories, questions,
+teams, crowns and lifelines. A different subject is mostly a config swap plus new art.
+
+**[BLUEPRINT.md](BLUEPRINT.md)** maps the source, lists every variation point with the
+exact file to touch, documents the data shapes, and gives a step-by-step recipe.
 
 ## Deploying your own copy
 
